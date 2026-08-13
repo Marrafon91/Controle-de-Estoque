@@ -1,0 +1,17 @@
+INSERT INTO tb_category(name, img, created_at) VALUES ('Alimentos', 'https://images.unsplash.com/photo-1542838132-92c53300491e', CURRENT_TIMESTAMP);
+INSERT INTO tb_category(name, img, created_at) VALUES ('Laticínios', 'https://images.unsplash.com/photo-1550583724-b2692b85b150', CURRENT_TIMESTAMP);
+INSERT INTO tb_category(name, img, created_at) VALUES ('Carnes', 'https://images.unsplash.com/photo-1603048297172-c92544798d5a', CURRENT_TIMESTAMP);
+INSERT INTO tb_category(name, img, created_at) VALUES ('Bebidas', 'https://images.unsplash.com/photo-1544145945-f90425340c7e', CURRENT_TIMESTAMP);
+INSERT INTO tb_category(name, img, created_at) VALUES ('Mercearia', 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a', CURRENT_TIMESTAMP);
+
+
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Arroz Branco 5kg', 50, 'KG', 10, '2027-08-13', 'A-01', 'Arroz tipo 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Feijão Carioca 1kg', 80, 'KG', 15, '2027-06-20', 'A-02', 'Feijão carioca tipo 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Macarrão Espaguete 500g', 120, 'UN', 20, '2028-01-15', 'A-03', 'Massa de trigo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Leite Integral 1L', 60, 'UN', 15, '2026-10-10', 'B-01', 'Manter refrigerado', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Queijo Mussarela 500g', 35, 'UN', 10, '2026-09-05', 'B-02', 'Produto refrigerado', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Frango Congelado 1kg', 45, 'KG', 10, '2027-02-18', 'C-01', 'Manter congelado', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Carne Bovina 1kg', 30, 'KG', 8, '2027-01-25', 'C-02', 'Corte bovino', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 3);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Óleo de Soja 900ml', 70, 'UN', 15, '2027-11-30', 'A-04', 'Óleo vegetal', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Açúcar Refinado 1kg', 90, 'KG', 20, '2028-03-12', 'A-05', 'Açúcar refinado', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+INSERT INTO tb_product(name, quantity, unit, minimum_stock, expiration_date, location, notes, created_at, updated_at, category_id) VALUES ('Café Torrado 500g', 55, 'UN', 12, '2027-12-08', 'A-06', 'Café torrado e moído', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
