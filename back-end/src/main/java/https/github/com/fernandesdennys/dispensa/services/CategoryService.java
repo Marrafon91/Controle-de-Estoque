@@ -1,9 +1,9 @@
 package https.github.com.fernandesdennys.dispensa.services;
 
-import https.github.com.fernandesdennys.dispensa.dtos.CategoryDTO;
-import https.github.com.fernandesdennys.dispensa.entities.Category;
+import https.github.com.fernandesdennys.dispensa.dtos.CategoriaDTO;
+import https.github.com.fernandesdennys.dispensa.entities.Categoria;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
-import https.github.com.fernandesdennys.dispensa.repositories.CategoryRepository;
+import https.github.com.fernandesdennys.dispensa.repositories.CategoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,21 +14,21 @@ import java.util.List;
 public class CategoryService {
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoriaRepository categoriaRepository;
 
     @Transactional(readOnly = true)
-    public List<CategoryDTO> findAll() {
+    public List<CategoriaDTO> findAll() {
 
-        List<Category> categories = categoryRepository.findAll();
+        List<Categoria> categories = categoriaRepository.findAll();
         return categories.stream()
-                .map(CategoryDTO::new)
+                .map(CategoriaDTO::new)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CategoryDTO findById(Long id) {
-        return categoryRepository.findById(id)
-                .map(CategoryDTO::new)
+    public CategoriaDTO findById(Integer id) {
+        return categoriaRepository.findById(id)
+                .map(CategoriaDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria com ID "  + id +  " não encontrada"));
     }
 

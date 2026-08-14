@@ -1,10 +1,10 @@
 package https.github.com.fernandesdennys.dispensa.services;
 
-import https.github.com.fernandesdennys.dispensa.dtos.ProductDTO;
-import https.github.com.fernandesdennys.dispensa.entities.Product;
+import https.github.com.fernandesdennys.dispensa.dtos.ProdutoDTO;
+import https.github.com.fernandesdennys.dispensa.entities.Produto;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 
-import https.github.com.fernandesdennys.dispensa.repositories.ProductRepository;
+import https.github.com.fernandesdennys.dispensa.repositories.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,21 +15,21 @@ import java.util.List;
 public class ProductService {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProdutoRepository produtoRepository;
 
     @Transactional(readOnly = true)
-    public List<ProductDTO> findAll() {
+    public List<ProdutoDTO> findAll() {
 
-        List<Product> categories = productRepository.findAll();
+        List<Produto> categories = produtoRepository.findAll();
         return categories.stream()
-                .map(ProductDTO::new)
+                .map(ProdutoDTO::new)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
-        return productRepository.findById(id)
-                .map(ProductDTO::new)
+    public ProdutoDTO findById(Integer id) {
+        return produtoRepository.findById(id)
+                .map(ProdutoDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto com ID "  + id +  " não encontrada"));
     }
 }

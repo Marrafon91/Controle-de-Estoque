@@ -1,6 +1,6 @@
 package https.github.com.fernandesdennys.dispensa.controllers;
 
-import https.github.com.fernandesdennys.dispensa.dtos.CategoryDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.CategoriaDTO;
 import https.github.com.fernandesdennys.dispensa.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +16,14 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<List<CategoryDTO>> findAllCategories() {
-        List<CategoryDTO> result = categoryService.findAll();
+    public ResponseEntity<List<CategoriaDTO>> findAllCategories() {
+        List<CategoriaDTO> result = categoryService.findAll();
         return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<CategoryDTO> findCategoriesById(@PathVariable Long id) {
-        CategoryDTO result = categoryService.findById(id);
+    public ResponseEntity<CategoriaDTO> findCategoriesById(@PathVariable Integer id) {
+        CategoriaDTO result = categoryService.findById(id);
         return ResponseEntity.ok().body(result);
     }
 }
