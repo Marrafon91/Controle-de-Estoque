@@ -18,8 +18,7 @@ public class CategoriaService {
 
     @Transactional(readOnly = true)
     public List<CategoriaDTO> findAll() {
-
-        List<Categoria> categories = categoriaRepository.findAll();
+        List<Categoria> categories = categoriaRepository.buscarTodas();
         return categories.stream()
                 .map(CategoriaDTO::new)
                 .toList();

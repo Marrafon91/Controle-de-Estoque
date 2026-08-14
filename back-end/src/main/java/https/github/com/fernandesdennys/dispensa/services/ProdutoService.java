@@ -6,6 +6,8 @@ import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundExcep
 
 import https.github.com.fernandesdennys.dispensa.repositories.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,25 @@ public class ProdutoService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @Transactional(readOnly = true)
+    public Page<ProdutoDTO> buscarProdutosPorCategoria(
+            Integer categoriaId,
+            Boolean abaixoMinimo,
+            String busca,
+            String ordenarPor,
+            Pageable pageable
+    ) {
+        Page<Produto> result = produtoRepository.buscarProdutos(
+                categoriaId,
+                abaixoMinimo,
+                busca,
+                ordenarPor,
+                pageable
+        );
+        return result.map(ProdutoDTO::new);
+    }
+
 
     @Transactional(readOnly = true)
     public List<ProdutoDTO> findAll() {
@@ -30,6 +51,6 @@ public class ProdutoService {
     public ProdutoDTO findById(Integer id) {
         return produtoRepository.findById(id)
                 .map(ProdutoDTO::new)
-                .orElseThrow(() -> new ResourceNotFoundException("Produto com ID "  + id +  " não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto com ID " + id + " não encontrada"));
     }
 }

@@ -35,7 +35,6 @@ public record ProdutoDTO(
         @DecimalMin(value = "0.0", message = "A quantidade ideal não pode ser negativa")
         @Digits(integer = 7, fraction = 3)
         BigDecimal quantidadeIdeal,
-
         Boolean ativo
 ) {
     public ProdutoDTO(Produto entity) {
