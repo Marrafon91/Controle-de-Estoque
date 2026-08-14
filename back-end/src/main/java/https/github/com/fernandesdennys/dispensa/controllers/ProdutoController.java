@@ -2,7 +2,7 @@ package https.github.com.fernandesdennys.dispensa.controllers;
 
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoDTO;
 
-import https.github.com.fernandesdennys.dispensa.services.ProductService;
+import https.github.com.fernandesdennys.dispensa.services.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,20 +14,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/produtos")
-public class ProductController {
+public class ProdutoController {
 
     @Autowired
-    private ProductService productService;
+    private ProdutoService produtoService;
 
     @GetMapping
     public ResponseEntity<List<ProdutoDTO>> findAllCategories() {
-        List<ProdutoDTO> result = productService.findAll();
+        List<ProdutoDTO> result = produtoService.findAll();
         return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<ProdutoDTO> findCategoriesById(@PathVariable Integer id) {
-        ProdutoDTO result = productService.findById(id);
+        ProdutoDTO result = produtoService.findById(id);
         return ResponseEntity.ok().body(result);
     }
 }

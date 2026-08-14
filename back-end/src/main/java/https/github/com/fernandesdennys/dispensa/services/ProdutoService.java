@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class ProductService {
+public class ProdutoService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
