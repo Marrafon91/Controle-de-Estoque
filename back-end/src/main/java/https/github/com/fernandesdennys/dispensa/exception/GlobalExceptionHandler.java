@@ -8,8 +8,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
-import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.time.Instant;
 
@@ -17,9 +15,9 @@ import java.time.Instant;
 public class GlobalExceptionHandler {
 
 
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<CustomError> business(ResourceNotFoundException e, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+    @ExceptionHandler(EstoqueInsuficienteException.class)
+    public ResponseEntity<CustomError> business(EstoqueInsuficienteException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
         CustomError error = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(error);
     }

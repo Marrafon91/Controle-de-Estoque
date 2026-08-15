@@ -14,9 +14,8 @@ public interface ProdutoMapper {
     @Mapping(target = "categoria", source = "categoriaId")
     Produto toEntity(ProdutoInsertDTO dto);
 
-    // toDTO nao precisa de @Mapping: o MapStruct detecta e usa
-    // diretamente o construtor "public ProdutoDTO(Produto entity)"
-    // que voce ja definiu no record, que ja resolve categoria.getId() sozinho
+    // Explícito: categoriaId (target) vem de categoria.id (source, aninhado)
+    @Mapping(target = "categoriaId", source = "categoria.id")
     ProdutoDTO toDTO(Produto produto);
 
     @Mapping(target = "categoria", source = "categoriaId")

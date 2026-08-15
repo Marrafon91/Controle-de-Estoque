@@ -33,7 +33,7 @@ public class Movimentacao {
     private String observacao;
 
     @CreatedDate
-    @Column(name = "criado_em", nullable = false)
+    @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
     public Movimentacao() {

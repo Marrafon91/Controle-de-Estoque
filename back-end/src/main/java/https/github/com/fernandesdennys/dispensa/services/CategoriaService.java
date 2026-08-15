@@ -26,7 +26,7 @@ public class CategoriaService {
 
     @Transactional(readOnly = true)
     public CategoriaDTO findById(Integer id) {
-        return categoriaRepository.findById(id)
+        return categoriaRepository.buscarPorId(id)
                 .map(CategoriaDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria com ID "  + id +  " não encontrada"));
     }

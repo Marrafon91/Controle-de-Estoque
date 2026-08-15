@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 
 @Service
 public class ProdutoService {
@@ -47,7 +49,7 @@ public class ProdutoService {
 
     @Transactional(readOnly = true)
     public ProdutoDTO findById(Integer id) {
-        return produtoRepository.findById(id)
+        return produtoRepository.buscarPorId(id)
                 .map(ProdutoDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto com ID " + id + " não encontrada"));
     }
@@ -76,4 +78,14 @@ public class ProdutoService {
             throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
         }
     }
+
+    @Transactional
+    public void delete(Integer id) {
+        int result = produtoRepository.softDelete(id, LocalDateTime.now());
+
+        if (result == 0) {
+            throw new ResourceNotFoundException("Produto com ID " + id + " não encontrado");
+        }
+    }
+
 }
