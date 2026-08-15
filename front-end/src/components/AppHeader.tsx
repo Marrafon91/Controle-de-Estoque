@@ -6,7 +6,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ totalProdutos, estoqueBaixo, esgotados }: AppHeaderProps) {
   return (
-    <header className="bg-linear-to-br from-brand-600 to-brand-700 px-5 pt-5 pb-6 rounded-b-3xl text-white">
+    <header className="bg-linear-to-br from-brand-600 to-brand-700 px-5 pt-5 pb-6 text-white">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-xs font-bold">

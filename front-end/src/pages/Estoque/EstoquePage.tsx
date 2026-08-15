@@ -9,7 +9,7 @@ import type { CategoriaDTO } from "../../types/categoria";
 
 function stepPara(unidade: string) {
   if (unidade === "UN" || unidade === "PCT") return 1;
-  if (unidade === "KG" || unidade === "L") return 0.5;
+  if (unidade === "KG" || unidade === "L") return 1;
   return 50; // G, ML
 }
 
