@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public record MovimentacaoInsertDTO(
 
         @NotNull(message = "A quantidade é obrigatória")
-        @DecimalMin(value = "0.001", message = "A quantidade deve ser maior que zero")
+        @DecimalMin(value = "0.0", message = "A quantidade deve ser maior que zero")
         @Digits(integer = 7, fraction = 3, message = "A quantidade deve ter no máximo 7 dígitos inteiros e 3 casas decimais")
         BigDecimal quantidade,
 

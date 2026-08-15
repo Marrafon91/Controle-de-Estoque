@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
 import { movimentacaoService } from "../../api/movimentacaoService";
 import { produtoService } from "../../api/produtoService";
 import { AppHeader } from "../../components/AppHeader";
@@ -33,6 +33,10 @@ function formatarData(iso: string): string {
 
 function isEntrada(tipo: MovimentacaoDTO["tipo"]) {
   return tipo === "ENTRADA";
+}
+
+function isAjuste(tipo: MovimentacaoDTO["tipo"]) {
+  return tipo === "AJUSTE";
 }
 
 function labelTipo(tipo: MovimentacaoDTO["tipo"]) {
@@ -132,16 +136,26 @@ export function HistoricoPage() {
           <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white">
             {movimentacoes.map((m) => {
               const entrada = isEntrada(m.tipo);
+              const ajuste = isAjuste(m.tipo);
+
               return (
                 <li key={m.id} className="flex items-center gap-3 px-4 py-3">
                   <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                      entrada
-                        ? "bg-success-500/10 text-success-600"
-                        : "bg-danger-500/10 text-danger-600"
+                      ajuste
+                        ? "bg-info-600/10 text-info-600"
+                        : entrada
+                          ? "bg-success-500/10 text-success-600"
+                          : "bg-danger-500/10 text-danger-600"
                     }`}
                   >
-                    {entrada ? <ArrowDown size={16} /> : <ArrowUp size={16} />}
+                    {ajuste ? (
+                      <RefreshCw size={15} />
+                    ) : entrada ? (
+                      <ArrowDown size={16} />
+                    ) : (
+                      <ArrowUp size={16} />
+                    )}
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -154,10 +168,19 @@ export function HistoricoPage() {
                   </div>
 
                   <span
-                    className={`shrink-0 text-sm font-bold ${entrada ? "text-success-600" : "text-danger-600"}`}
+                    className={`shrink-0 text-sm font-bold ${
+                      ajuste
+                        ? "text-info-600"
+                        : entrada
+                          ? "text-success-600"
+                          : "text-danger-600"
+                    }`}
                   >
-                    {entrada ? "+" : "-"}
-                    {m.quantidade}
+                    {ajuste
+                      ? `= ${m.quantidade}`
+                      : entrada
+                        ? `+${m.quantidade}`
+                        : `-${m.quantidade}`}
                   </span>
                 </li>
               );

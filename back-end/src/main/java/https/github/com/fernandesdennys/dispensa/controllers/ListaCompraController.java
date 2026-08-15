@@ -27,6 +27,11 @@ public class ListaCompraController {
         return ResponseEntity.created(uri).body(novaLista);
     }
 
+    @PostMapping("/{id}/sincronizar")
+    public ResponseEntity<ListaCompraDTO> sincronizar(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.sincronizar(id));
+    }
+
     @GetMapping
     public ResponseEntity<List<ListaCompraDTO>> listar(
             @RequestParam(required = false) StatusListaCompra status) {

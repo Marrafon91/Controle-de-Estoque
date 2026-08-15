@@ -16,26 +16,26 @@ INSERT INTO tb_categoria(nome) VALUES ('Produtos de Limpeza');
 -- =========================================================
 -- PRODUTO
 -- =========================================================
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Peito de Frango', 1, 'KG', 25.500, 10.000, 30.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Carne Moída', 1, 'KG', 18.000, 8.000, 25.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Leite Integral', 2, 'L', 12.000, 5.000, 20.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Queijo Mussarela', 2, 'KG', 7.500, 3.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Arroz', 4, 'KG', 40.000, 15.000, 50.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Feijão Carioca', 4, 'KG', 22.000, 8.000, 30.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Macarrão Espaguete', 5, 'PCT', 35.000, 10.000, 50.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Tomate', 6, 'KG', 4.500, 5.000, 15.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Refrigerante Cola', 3, 'L', 8.000, 10.000, 30.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Detergente', 10, 'KG', 2500.000, 1000.000, 5000.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Peito de Frango', 1, 'KG', 5.000, 5.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Carne Moída', 1, 'KG', 8.000, 4.000, 8.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Leite Integral', 2, 'L', 2.000, 5.000, 8.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Queijo Mussarela', 2, 'KG', 7.000, 2.000, 5.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Arroz', 4, 'KG', 5.000, 5.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Feijão Carioca', 4, 'KG', 10.000, 5.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Macarrão Espaguete', 5, 'PCT', 12.000, 4.000, 7.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Tomate', 6, 'KG', 4.000, 5.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Refrigerante Cola', 3, 'L', 1.000, 8.000, 10.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tb_produto (nome, categoria_id, unidade, quantidade_atual, quantidade_minima, quantidade_ideal, ativo, criado_em, atualizado_em) VALUES ('Detergente', 10, 'L', 0.000, 8.000, 9.000, TRUE,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- =========================================================
 -- MOVIMENTACAO
 -- =========================================================
 
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (1,'ENTRADA',30.000,'Compra de frango para reposição do estoque', CURRENT_TIMESTAMP);
-INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (1,'SAIDA',4.500,'Utilização na produção', CURRENT_TIMESTAMP);
+INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (1,'SAIDA',4.000,'Utilização na produção', CURRENT_TIMESTAMP);
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (2,'ENTRADA',20.000,'Compra de carne moída', CURRENT_TIMESTAMP);
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (3,'ENTRADA',15.000,'Reposição de leite', CURRENT_TIMESTAMP);
-INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (4,'SAIDA',2.500,'Utilização na cozinha', CURRENT_TIMESTAMP);
+INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (4,'SAIDA',2.000,'Utilização na cozinha', CURRENT_TIMESTAMP);
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (5,'ENTRADA',50.000,'Compra mensal de arroz', CURRENT_TIMESTAMP);
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (6,'SAIDA',8.000,'Consumo na produção', CURRENT_TIMESTAMP);
 INSERT INTO tb_movimentacao (produto_id, tipo, quantidade, observacao, criado_em) VALUES (7,'AJUSTE',35.000,'Ajuste após conferência do estoque', CURRENT_TIMESTAMP);
@@ -66,7 +66,7 @@ INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, qua
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (2,1,20.000,20.000,FALSE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (2,2,15.000,15.000,TRUE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (3,9,30.000,NULL,FALSE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (4,10,3000.000,3000.000,TRUE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (4,10,30.000,30.000,TRUE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (5,5,30.000,NULL,FALSE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (7,3,15.000,15.000,TRUE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (7,4,8.000,8.000,TRUE);

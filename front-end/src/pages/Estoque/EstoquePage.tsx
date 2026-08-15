@@ -7,11 +7,7 @@ import { AppHeader } from "../../components/AppHeader";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
 
-function stepPara(unidade: string) {
-  if (unidade === "UN" || unidade === "PCT") return 1;
-  if (unidade === "KG" || unidade === "L") return 1;
-  return 50; // G, ML
-}
+const STEP_PADRAO = 1;
 
 function statusBadge(atual: number, minima: number) {
   if (atual <= 0)
@@ -56,7 +52,8 @@ export function EstoquePage() {
 
   async function ajustarQuantidade(produto: ProdutoDTO, delta: number) {
     setErroPorProduto((prev) => ({ ...prev, [produto.id]: "" }));
-    const novaQuantidade = produto.quantidadeAtual + delta;
+    const quantidadeAnterior = produto.quantidadeAtual;
+    const novaQuantidade = quantidadeAnterior + delta;
 
     // atualização otimista
     setProdutos((prev) =>
@@ -80,13 +77,47 @@ export function EstoquePage() {
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
-            ? { ...p, quantidadeAtual: produto.quantidadeAtual }
+            ? { ...p, quantidadeAtual: quantidadeAnterior }
             : p,
         ),
       );
       setErroPorProduto((prev) => ({
         ...prev,
         [produto.id]: err.mensagem ?? "Erro ao atualizar estoque",
+      }));
+    }
+  }
+
+  function atualizarLocalmenteDurranteArraste(
+    produtoId: number,
+    valor: number,
+  ) {
+    setProdutos((prev) =>
+      prev.map((p) =>
+        p.id === produtoId ? { ...p, quantidadeAtual: valor } : p,
+      ),
+    );
+  }
+
+  async function ajustarPorSlider(produto: ProdutoDTO, novaQuantidade: number) {
+    setErroPorProduto((prev) => ({ ...prev, [produto.id]: "" }));
+    const quantidadeAnterior = produto.quantidadeAtual;
+
+    try {
+      await movimentacaoService.ajuste(produto.id, {
+        quantidade: novaQuantidade,
+      });
+    } catch (err: any) {
+      setProdutos((prev) =>
+        prev.map((p) =>
+          p.id === produto.id
+            ? { ...p, quantidadeAtual: quantidadeAnterior }
+            : p,
+        ),
+      );
+      setErroPorProduto((prev) => ({
+        ...prev,
+        [produto.id]: err.mensagem ?? "Erro ao ajustar estoque",
       }));
     }
   }
@@ -115,32 +146,48 @@ export function EstoquePage() {
           />
         </div>
 
-        <div className="no-scrollbar mb-4 flex gap-2 overflow-x-auto pb-1">
-          <FiltroChip
-            label="Todos"
-            ativo={categoriaAtiva === "todos"}
-            onClick={() => setCategoriaAtiva("todos")}
-          />
-          {categorias.map((c) => (
+        <div className="relative mb-4">
+          <div className="scroll-thin flex gap-2 overflow-x-auto pb-2">
             <FiltroChip
-              key={c.id}
-              label={c.nome}
-              ativo={categoriaAtiva === c.id}
-              onClick={() => setCategoriaAtiva(c.id)}
+              label="Todos"
+              ativo={categoriaAtiva === "todos"}
+              onClick={() => setCategoriaAtiva("todos")}
             />
-          ))}
+            {categorias.map((c) => (
+              <FiltroChip
+                key={c.id}
+                label={c.nome}
+                ativo={categoriaAtiva === c.id}
+                onClick={() => setCategoriaAtiva(c.id)}
+              />
+            ))}
+          </div>
+          <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-gradient-to-l to-transparent" />
         </div>
 
         <ul className="space-y-3">
           {produtosFiltrados.map((p) => {
             const badge = statusBadge(p.quantidadeAtual, p.quantidadeMinima);
+            const categoriaNome =
+              categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
+
+            const corThumb =
+              p.quantidadeAtual <= 0
+                ? "var(--color-danger-600)"
+                : p.quantidadeAtual < p.quantidadeMinima
+                  ? "var(--color-warn-600)"
+                  : "var(--color-success-600)";
+
             const percentual = Math.min(
               100,
               (p.quantidadeAtual / p.quantidadeIdeal) * 100,
             );
-            const step = stepPara(p.unidade);
-            const categoriaNome =
-              categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
+            const corPreenchida =
+              p.quantidadeAtual <= 0
+                ? "#F43F5E"
+                : p.quantidadeAtual < p.quantidadeMinima
+                  ? "#F59E0B"
+                  : "#22C55E";
 
             return (
               <li
@@ -165,18 +212,30 @@ export function EstoquePage() {
                   )}
                 </div>
 
-                <div className="my-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      p.quantidadeAtual <= 0
-                        ? "bg-danger-500"
-                        : p.quantidadeAtual < p.quantidadeMinima
-                          ? "bg-warn-500"
-                          : "bg-success-500"
-                    }`}
-                    style={{ width: `${percentual}%` }}
-                  />
-                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(p.quantidadeIdeal, p.quantidadeAtual)}
+                  step={1}
+                  value={p.quantidadeAtual}
+                  className="stock-slider my-3"
+                  style={{
+                    ["--thumb-color" as any]: corThumb,
+                    background: `linear-gradient(to right, ${corPreenchida} ${percentual}%, #E2E8F0 ${percentual}%)`,
+                  }}
+                  onInput={(e) =>
+                    atualizarLocalmenteDurranteArraste(
+                      p.id,
+                      Number(e.currentTarget.value),
+                    )
+                  }
+                  onMouseUp={(e) =>
+                    ajustarPorSlider(p, Number(e.currentTarget.value))
+                  }
+                  onTouchEnd={(e) =>
+                    ajustarPorSlider(p, Number(e.currentTarget.value))
+                  }
+                />
 
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm">
@@ -188,13 +247,13 @@ export function EstoquePage() {
                   </p>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => ajustarQuantidade(p, -step)}
+                      onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200"
                     >
                       <Minus size={14} />
                     </button>
                     <button
-                      onClick={() => ajustarQuantidade(p, step)}
+                      onClick={() => ajustarQuantidade(p, STEP_PADRAO)}
                       className="bg-brand-600 hover:bg-brand-700 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
                     >
                       <Plus size={14} />
@@ -228,7 +287,7 @@ function FiltroChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+      className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
         ativo
           ? "bg-brand-600 text-white"
           : "border border-slate-100 bg-white text-slate-500"

@@ -12,6 +12,23 @@ export function ComprasIndexPage() {
   useEffect(() => {
     listaCompraService
       .listar("ABERTA")
+      .then(async (res) => {
+        if (res.data.length > 0) {
+          const id = res.data[0].id;
+          await listaCompraService.sincronizar(id); // adiciona itens novos que ficaram abaixo do mínimo
+          setListaIdAberta(id);
+        } else {
+          setListaIdAberta(null);
+        }
+      })
+      .catch((err) =>
+        setErro(err.mensagem ?? "Não foi possível carregar as listas."),
+      );
+  }, []);
+
+  useEffect(() => {
+    listaCompraService
+      .listar("ABERTA")
       .then((res) =>
         setListaIdAberta(res.data.length > 0 ? res.data[0].id : null),
       )

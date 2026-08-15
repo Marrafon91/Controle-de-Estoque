@@ -80,34 +80,37 @@ export function InicioPage() {
               </span>
             </div>
 
-            <div className="no-scrollbar -mx-5 mb-4 flex gap-3 overflow-x-auto px-5 pb-2">
-              {precisamAtencao.map((p) => {
-                const badge = badgeStatus(p);
-                return (
-                  <div
-                    key={p.id}
-                    className="min-w-[180px] shrink-0 rounded-2xl border border-slate-100 bg-white p-3"
-                  >
-                    <div className="mb-1 flex items-start justify-between">
-                      <div className="bg-brand-100 text-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold">
-                        {p.nome.charAt(0)}
+            <div className="relative mb-4">
+              <div className="scroll-thin -mx-5 flex gap-3 overflow-x-auto px-5 pb-3">
+                {precisamAtencao.map((p) => {
+                  const badge = badgeStatus(p);
+                  return (
+                    <div
+                      key={p.id}
+                      className="min-w-[180px] shrink-0 rounded-2xl border border-slate-100 bg-white p-3"
+                    >
+                      <div className="mb-1 flex items-start justify-between">
+                        <div className="bg-brand-100 text-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold">
+                          {p.nome.charAt(0)}
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.classe}`}
+                        >
+                          {badge.texto}
+                        </span>
                       </div>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.classe}`}
-                      >
-                        {badge.texto}
-                      </span>
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {p.nome}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        {p.quantidadeAtual} {p.unidade.toLowerCase()} · min{" "}
+                        {p.quantidadeMinima}
+                      </p>
                     </div>
-                    <p className="truncate text-sm font-semibold text-slate-800">
-                      {p.nome}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      {p.quantidadeAtual} {p.unidade.toLowerCase()} · min{" "}
-                      {p.quantidadeMinima}
-                    </p>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              {/* <div className="from-surface pointer-events-none absolute top-0 right-5 bottom-4 w-8 bg-linear-to-l to-transparent" /> */}
             </div>
 
             <Link
@@ -156,21 +159,26 @@ export function InicioPage() {
         <p className="mb-2 text-sm font-semibold text-slate-700">
           Por categoria
         </p>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-          {categorias.map((c) => {
-            const count = produtos.filter((p) => p.categoriaId === c.id).length;
-            return (
-              <div
-                key={c.id}
-                className="min-w-27.5 shrink-0 rounded-xl border border-slate-100 bg-white px-3 py-2.5"
-              >
-                <p className="truncate text-xs font-semibold text-slate-700">
-                  {c.nome}
-                </p>
-                <p className="text-[11px] text-slate-400">{count} itens</p>
-              </div>
-            );
-          })}
+        <div className="relative">
+          <div className="scroll-thin flex gap-2 overflow-x-auto pb-3">
+            {categorias.map((c) => {
+              const count = produtos.filter(
+                (p) => p.categoriaId === c.id,
+              ).length;
+              return (
+                <div
+                  key={c.id}
+                  className="min-w-27.5 shrink-0 rounded-xl border border-slate-100 bg-white px-3 py-2.5"
+                >
+                  <p className="truncate text-xs font-semibold text-slate-700">
+                    {c.nome}
+                  </p>
+                  <p className="text-[11px] text-slate-400">{count} itens</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-4 w-8 bg-linear-to-l to-transparent" />
         </div>
       </div>
     </div>

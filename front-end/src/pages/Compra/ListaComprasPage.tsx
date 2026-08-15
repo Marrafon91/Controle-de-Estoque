@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Info } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Check, Info, Minus, Plus } from "lucide-react";
 import { listaCompraService } from "../../api/listaCompraService";
 import type {
   ListaCompraDTO,
@@ -9,10 +9,12 @@ import type {
 
 export function ListaComprasPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const listaId = id ? Number(id) : null;
 
   const [lista, setLista] = useState<ListaCompraDTO | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroPorItem, setErroPorItem] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (listaId) {
@@ -29,25 +31,35 @@ export function ListaComprasPage() {
     }
   }
 
-  async function alternarComprado(item: ListaCompraItemDTO) {
+  async function alterarQuantidade(item: ListaCompraItemDTO, delta: number) {
     if (!lista) return;
-    const comprado = !item.comprado;
+    setErroPorItem((prev) => ({ ...prev, [item.id]: "" }));
 
+    const quantidadeAtual = item.quantidadeComprada ?? 0;
+    const novaQuantidade = Math.max(0, quantidadeAtual + delta);
+    const comprado = novaQuantidade > 0;
+
+    // atualização otimista
     setLista({
       ...lista,
       itens: lista.itens.map((i) =>
-        i.id === item.id ? { ...i, comprado } : i,
+        i.id === item.id
+          ? { ...i, quantidadeComprada: novaQuantidade, comprado }
+          : i,
       ),
     });
 
     try {
       await listaCompraService.atualizarItem(lista.id, item.id, {
         comprado,
-        quantidadeComprada: item.quantidadeComprada ?? item.quantidadeSugerida,
+        quantidadeComprada: novaQuantidade,
       });
     } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível atualizar o item.");
-      carregarLista(lista.id);
+      setErroPorItem((prev) => ({
+        ...prev,
+        [item.id]: err.mensagem ?? "Não foi possível atualizar o item.",
+      }));
+      carregarLista(lista.id); // reverte buscando o estado real do backend
     }
   }
 
@@ -85,35 +97,76 @@ export function ListaComprasPage() {
       <div className="bg-brand-50 text-brand-700 mb-4 flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs">
         <Info size={14} className="mt-0.5 shrink-0" />
         <p>
-          Produtos com estoque igual ou abaixo do mínimo entram aqui
-          automaticamente. Ao marcar como comprado, gera a entrada no estoque.
+          Use o + para definir quantos você vai comprar de cada item. Assim que
+          a quantidade sair de zero, o item já fica marcado como comprado.
         </p>
       </div>
 
       <ul className="mb-6 space-y-2">
-        {lista.itens.map((item) => (
-          <li
-            key={item.id}
-            className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-3"
-          >
-            <label className="flex flex-1 cursor-pointer items-center gap-3">
-              <input
-                type="checkbox"
-                checked={item.comprado}
-                onChange={() => alternarComprado(item)}
-                className="accent-brand-600 h-4 w-4 rounded"
-              />
-              <span
-                className={`text-sm ${item.comprado ? "text-slate-400 line-through" : "font-medium text-slate-700"}`}
-              >
-                {item.produtoNome}
-              </span>
-            </label>
-            <span className="text-brand-600 bg-brand-100 rounded-full px-2 py-1 text-[10px] font-bold">
-              AUTO
-            </span>
-          </li>
-        ))}
+        {lista.itens.map((item) => {
+          const quantidadeAtual = item.quantidadeComprada ?? 0;
+
+          return (
+            <li
+              key={item.id}
+              className={`rounded-2xl border px-4 py-3 transition-colors ${
+                item.comprado
+                  ? "border-success-500/30 bg-success-500/5"
+                  : "border-slate-100 bg-white"
+              }`}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {item.comprado && (
+                    <span className="bg-success-500 flex h-4 w-4 items-center justify-center rounded-full text-white">
+                      <Check size={11} strokeWidth={3} />
+                    </span>
+                  )}
+                  <span
+                    className={`text-sm font-medium ${
+                      item.comprado ? "text-slate-700" : "text-slate-700"
+                    }`}
+                  >
+                    {item.produtoNome}
+                  </span>
+                </div>
+                <span className="bg-brand-100 text-brand-600 shrink-0 rounded-full px-2 py-1 text-[10px] font-bold">
+                  AUTO
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-slate-400">
+                  sugerido: {item.quantidadeSugerida}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => alterarQuantidade(item, -1)}
+                    disabled={quantidadeAtual <= 0}
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200 disabled:opacity-40"
+                  >
+                    <Minus size={12} />
+                  </button>
+                  <span className="w-8 text-center text-sm font-semibold text-slate-800">
+                    {quantidadeAtual}
+                  </span>
+                  <button
+                    onClick={() => alterarQuantidade(item, 1)}
+                    className="bg-brand-600 hover:bg-brand-700 flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors"
+                  >
+                    <Plus size={12} />
+                  </button>
+                </div>
+              </div>
+
+              {erroPorItem[item.id] && (
+                <p className="text-danger-600 mt-2 text-[11px]">
+                  {erroPorItem[item.id]}
+                </p>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       {lista.status === "ABERTA" && (
@@ -121,7 +174,7 @@ export function ListaComprasPage() {
           onClick={async () => {
             try {
               await listaCompraService.finalizar(lista.id);
-              carregarLista(lista.id);
+              navigate("/estoque");
             } catch (err: any) {
               setErro(err.mensagem ?? "Não foi possível finalizar a lista.");
             }

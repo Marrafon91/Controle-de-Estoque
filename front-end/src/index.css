@@ -1,29 +1,112 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #F5F3FF;
-  --color-brand-100: #EDE9FE;
-  --color-brand-500: #7C3AED;
-  --color-brand-600: #6D28D9;
-  --color-brand-700: #5B21B6;
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-500: #7c3aed;
+  --color-brand-600: #6d28d9;
+  --color-brand-700: #5b21b6;
 
-  --color-warn-100: #FEF3C7;
-  --color-warn-500: #F59E0B;
-  --color-warn-600: #D97706;
+  --color-warn-100: #fef3c7;
+  --color-warn-500: #f59e0b;
+  --color-warn-600: #d97706;
 
-  --color-danger-100: #FFE4E6;
-  --color-danger-500: #F43F5E;
-  --color-danger-600: #E11D48;
+  --color-danger-100: #ffe4e6;
+  --color-danger-500: #f43f5e;
+  --color-danger-600: #e11d48;
 
-  --color-success-500: #22C55E;
-  --color-success-600: #16A34A;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
 
-  --color-info-600: #2563EB;
+  --color-info-600: #2563eb;
 
-  --color-surface: #F8F7FB;
+  --color-surface: #f8f7fb;
 
   --font-sans: "Inter", sans-serif;
 }
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-thin {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--color-brand-500) transparent; /* Firefox */
+}
+
+.scroll-thin::-webkit-scrollbar {
+  height: 6px; /* barra horizontal fina */
+}
+
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-brand-500);
+  border-radius: 999px;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-brand-600);
+}
+
+@import "tailwindcss";
+
+@theme {
+  /* ... suas cores continuam iguais ... */
+}
+
+.stock-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+  background: transparent; /* o track colorido é feito por CSS var, ver abaixo */
+}
+
+.stock-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: white;
+  border: 3px solid var(--thumb-color, var(--color-success-600));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  margin-top: -5px;
+}
+
+.stock-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.stock-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.stock-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: white;
+  border: 3px solid var(--thumb-color, var(--color-success-600));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+}
+
+.stock-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}

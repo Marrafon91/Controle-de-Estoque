@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ListaCompraService {
@@ -66,6 +68,36 @@ public class ListaCompraService {
         }
 
         lista = listaCompraRepository.save(lista);
+        return mapper.toDTO(lista);
+    }
+
+    @Transactional
+    public ListaCompraDTO sincronizar(Integer id) {
+        ListaCompra lista = listaCompraRepository.buscarPorIdComItens(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lista não encontrada: id " + id));
+
+        if (lista.getStatus() != StatusListaCompra.ABERTA) {
+            throw new ListaJaFinalizadaException("Lista " + id + " já está finalizada ou cancelada");
+        }
+
+        Set<Integer> produtoIdsExistentes = lista.getItens().stream()
+                .map(item -> item.getProduto().getId())
+                .collect(Collectors.toSet());
+
+        List<Produto> abaixoMinimo = produtoRepository.buscarProdutosAbaixoDoMinimo();
+
+        for (Produto produto : abaixoMinimo) {
+            if (!produtoIdsExistentes.contains(produto.getId())) {
+                ListaCompraItem novoItem = new ListaCompraItem();
+                novoItem.setListaCompra(lista);
+                novoItem.setProduto(produto);
+                novoItem.setQuantidadeSugerida(produto.getQuantidadeIdeal().subtract(produto.getQuantidadeAtual()));
+                novoItem.setComprado(false);
+                lista.getItens().add(novoItem);
+            }
+        }
+
+        lista = listaCompraRepository.save(lista); // cascade ALL persiste os itens novos
         return mapper.toDTO(lista);
     }
 
