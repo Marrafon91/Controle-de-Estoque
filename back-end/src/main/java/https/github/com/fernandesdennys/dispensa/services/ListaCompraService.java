@@ -141,4 +141,12 @@ public class ListaCompraService {
         }
         return buscarPorId(id);
     }
+
+    @Transactional(readOnly = true)
+    public List<ListaCompraDTO> listar(StatusListaCompra status) {
+        return listaCompraRepository.buscarTodas(status)
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
 }

@@ -3,6 +3,7 @@ import type {
   ListaCompraDTO,
   ListaCompraGerarDTO,
   ListaCompraItemUpdateDTO,
+  StatusListaCompra,
 } from '../types/listaCompra';
 import type { AxiosResponse } from 'axios';
 
@@ -24,4 +25,7 @@ export const listaCompraService = {
 
   cancelar: (id: number): Promise<AxiosResponse<ListaCompraDTO>> =>
     api.post(`/listas/${id}/cancelar`),
+
+  listar: (status?: StatusListaCompra): Promise<AxiosResponse<ListaCompraDTO[]>> =>
+  api.get('/listas', { params: status ? { status } : undefined }),
 };

@@ -3,6 +3,7 @@ package https.github.com.fernandesdennys.dispensa.controllers;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraGerarDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraItemUpdateDTO;
+import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
 import https.github.com.fernandesdennys.dispensa.services.ListaCompraService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/listas")
@@ -23,6 +25,12 @@ public class ListaCompraController {
         ListaCompraDTO novaLista = service.gerar(dto);
         URI uri = URI.create("/listas/" + novaLista.id());
         return ResponseEntity.created(uri).body(novaLista);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ListaCompraDTO>> listar(
+            @RequestParam(required = false) StatusListaCompra status) {
+        return ResponseEntity.ok(service.listar(status));
     }
 
     @GetMapping("/{id}")

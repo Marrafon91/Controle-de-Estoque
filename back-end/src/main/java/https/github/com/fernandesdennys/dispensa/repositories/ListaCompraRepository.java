@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ListaCompraRepository extends JpaRepository<ListaCompra, Integer> {
@@ -40,4 +41,13 @@ public interface ListaCompraRepository extends JpaRepository<ListaCompra, Intege
             WHERE l.id = :id AND l.status = 'ABERTA'
         """)
     int cancelar(@Param("id") Integer id);
+
+    @Query("""
+            SELECT DISTINCT l FROM ListaCompra l
+            LEFT JOIN FETCH l.itens i
+            LEFT JOIN FETCH i.produto
+            WHERE (:status IS NULL OR l.status = :status)
+            ORDER BY l.criadoEm DESC
+        """)
+    List<ListaCompra> buscarTodas(@Param("status") StatusListaCompra status);
 }
