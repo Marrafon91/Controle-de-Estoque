@@ -24,40 +24,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 
+    //ENUM throw
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<CustomError> handleMessageNotReadable(
-            HttpMessageNotReadableException e, WebRequest request) {
+    public ResponseEntity<CustomError> httpMessageNotReadable(HttpMessageNotReadableException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String mensagem = extrairMensagemLimpa(e);
+        CustomError err = new CustomError(Instant.now(), status.value(), mensagem, request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
 
-        Throwable cause = e.getCause();
-
-        // Caso específico: valor inválido pra um Enum
-        if (cause instanceof InvalidFormatException ife && ife.getTargetType().isEnum()) {
-            String campo = ife.getPath().isEmpty() ? "campo desconhecido" : ife.getPath().getFirst().getPropertyName();
-            Object valorInvalido = ife.getValue();
-            Object[] valoresValidos = ife.getTargetType().getEnumConstants();
-
-            String mensagem = String.format(
-                    "Valor '%s' inválido para o campo '%s'. Valores aceitos: %s",
-                    valorInvalido, campo, java.util.Arrays.toString(valoresValidos)
-            );
-
-            CustomError err = new CustomError (
-                    Instant.now(),
-                    HttpStatus.BAD_REQUEST.value(),
-                    "Enum inválido",
-                    mensagem
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+    private String extrairMensagemLimpa(Throwable e) {
+        Throwable causaRaiz = e;
+        while (causaRaiz.getCause() != null) {
+            causaRaiz = causaRaiz.getCause();
         }
-
-        // Fallback genérico pra outros erros de parse de JSON
-        CustomError err = new CustomError(
-                Instant.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Corpo da requisição inválido",
-                "Não foi possível interpretar o JSON enviado"
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+        return causaRaiz.getMessage();
     }
 
     @ExceptionHandler(ForbiddenException.class)
