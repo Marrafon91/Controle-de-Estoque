@@ -162,7 +162,7 @@ export function InicioPage() {
             return (
               <div
                 key={c.id}
-                className="min-w-[110px] shrink-0 rounded-xl border border-slate-100 bg-white px-3 py-2.5"
+                className="min-w-27.5 shrink-0 rounded-xl border border-slate-100 bg-white px-3 py-2.5"
               >
                 <p className="truncate text-xs font-semibold text-slate-700">
                   {c.nome}

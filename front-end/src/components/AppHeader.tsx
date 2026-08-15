@@ -10,7 +10,7 @@ export function AppHeader({ totalProdutos, estoqueBaixo, esgotados }: AppHeaderP
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-xs font-bold">
-            DNS
+            GUI
           </div>
           <div>
             <p className="font-bold text-sm leading-none">StockHouse</p>
