@@ -6,6 +6,7 @@ import type {
   ListaCompraDTO,
   ListaCompraItemDTO,
 } from "../../types/listaCompra";
+import type { ApiError } from "../../types/error";
 
 export function ListaComprasPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,8 +27,9 @@ export function ListaComprasPage() {
     try {
       const res = await listaCompraService.buscarPorId(id);
       setLista(res.data);
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível carregar a lista.");
+    } catch (err) {
+      const erro = err as ApiError
+      setErro(erro.mensagem ?? "Não foi possível carregar a lista.");
     }
   }
 
@@ -54,10 +56,11 @@ export function ListaComprasPage() {
         comprado,
         quantidadeComprada: novaQuantidade,
       });
-    } catch (err: any) {
+    } catch (err) {
+      const erro = err as ApiError;
       setErroPorItem((prev) => ({
         ...prev,
-        [item.id]: err.mensagem ?? "Não foi possível atualizar o item.",
+        [item.id]: erro.mensagem ?? "Não foi possível atualizar o item.",
       }));
       carregarLista(lista.id); // reverte buscando o estado real do backend
     }
@@ -175,8 +178,9 @@ export function ListaComprasPage() {
             try {
               await listaCompraService.finalizar(lista.id);
               navigate("/estoque");
-            } catch (err: any) {
-              setErro(err.mensagem ?? "Não foi possível finalizar a lista.");
+            } catch (err) {
+              const erro = err as ApiError;
+              setErro(erro.mensagem ?? "Não foi possível finalizar a lista.");
             }
           }}
           className="bg-success-600 w-full rounded-xl py-3 text-sm font-semibold text-white"

@@ -6,6 +6,7 @@ import { movimentacaoService } from "../../api/movimentacaoService";
 import { AppHeader } from "../../components/AppHeader";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
+import type { ApiError } from "../../types/error";
 
 const STEP_PADRAO = 1;
 
@@ -72,8 +73,9 @@ export function EstoquePage() {
           quantidade: Math.abs(delta),
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       // reverte em caso de erro (ex: estoque insuficiente)
+      const erro = err as ApiError
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -83,7 +85,7 @@ export function EstoquePage() {
       );
       setErroPorProduto((prev) => ({
         ...prev,
-        [produto.id]: err.mensagem ?? "Erro ao atualizar estoque",
+        [produto.id]: erro.mensagem ?? "Erro ao atualizar estoque",
       }));
     }
   }
@@ -107,7 +109,8 @@ export function EstoquePage() {
       await movimentacaoService.ajuste(produto.id, {
         quantidade: novaQuantidade,
       });
-    } catch (err: any) {
+    } catch (err) {
+      const erro = err as ApiError
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -117,7 +120,7 @@ export function EstoquePage() {
       );
       setErroPorProduto((prev) => ({
         ...prev,
-        [produto.id]: err.mensagem ?? "Erro ao ajustar estoque",
+        [produto.id]: erro.mensagem ?? "Erro ao ajustar estoque",
       }));
     }
   }
@@ -162,7 +165,7 @@ export function EstoquePage() {
               />
             ))}
           </div>
-          <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-gradient-to-l to-transparent" />
+          <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-linear-to-l to-transparent" />
         </div>
 
         <ul className="space-y-3">

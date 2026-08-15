@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { listaCompraService } from "../../api/listaCompraService";
+import type { ApiError } from "../../types/error";
 
 export function ComprasIndexPage() {
   const [listaIdAberta, setListaIdAberta] = useState<number | null | undefined>(
@@ -45,8 +46,9 @@ export function ComprasIndexPage() {
         titulo: "Lista de compras",
       });
       setListaIdAberta(res.data.id);
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível gerar a lista.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível gerar a lista.");
     } finally {
       setGerando(false);
     }

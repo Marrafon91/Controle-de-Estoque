@@ -87,7 +87,7 @@ export function InicioPage() {
                   return (
                     <div
                       key={p.id}
-                      className="min-w-[180px] shrink-0 rounded-2xl border border-slate-100 bg-white p-3"
+                      className="min-w-45 shrink-0 rounded-2xl border border-slate-100 bg-white p-3"
                     >
                       <div className="mb-1 flex items-start justify-between">
                         <div className="bg-brand-100 text-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold">

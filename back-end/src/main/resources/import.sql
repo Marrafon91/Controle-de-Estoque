@@ -62,12 +62,12 @@ INSERT INTO tb_lista_compra (titulo, status, criado_em, finalizado_em) VALUES ('
 -- =========================================================
 
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (1,8,10.000,NULL,FALSE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (1,9,20.000,NULL,FALSE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (2,1,20.000,20.000,FALSE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (1,9,10.000,NULL,FALSE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (2,1,10.000,20.000,FALSE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (2,2,15.000,15.000,TRUE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (3,9,30.000,NULL,FALSE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (4,10,30.000,30.000,TRUE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (5,5,30.000,NULL,FALSE);
-INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (7,3,15.000,15.000,TRUE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (3,9,10.000,NULL,FALSE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (4,10,10.000,10.000,TRUE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (5,5,10.000,NULL,FALSE);
+INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (7,3,10.000,15.000,TRUE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (7,4,8.000,8.000,TRUE);
 INSERT INTO tb_lista_compra_item (lista_id, produto_id, quantidade_sugerida, quantidade_comprada, comprado) VALUES (8,7,25.000,NULL,FALSE);

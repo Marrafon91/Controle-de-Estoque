@@ -5,6 +5,7 @@ import { produtoService } from "../../api/produtoService";
 import { AppHeader } from "../../components/AppHeader";
 import type { MovimentacaoDTO } from "../../types/movimentacao";
 import type { ProdutoDTO } from "../../types/produto";
+import type { ApiError } from "../../types/error";
 
 interface MovimentacaoComProduto extends MovimentacaoDTO {
   produtoNome: string;
@@ -91,8 +92,9 @@ export function HistoricoPage() {
         );
 
       setMovimentacoes(todas);
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível carregar o histórico.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível carregar o histórico.");
     } finally {
       setCarregando(false);
     }
