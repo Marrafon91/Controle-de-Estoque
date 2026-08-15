@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ListaCompraDTO(
         Integer id,
@@ -13,21 +14,9 @@ public record ListaCompraDTO(
         @NotBlank(message = "O título é obrigatório")
         @Size(max = 120, message = "O título deve ter no máximo 120 caracteres")
         String titulo,
-
         StatusListaCompra status,
-
         LocalDateTime criadoEm,
-
-        LocalDateTime finalizadoEm
-
+        LocalDateTime finalizadoEm,
+        List<ListaCompraItemDTO> itens
 ) {
-    public ListaCompraDTO(ListaCompra entity) {
-        this(
-                entity.getId(),
-                entity.getTitulo(),
-                entity.getStatus(),
-                entity.getCriadoEm(),
-                entity.getFinalizadoEm()
-        );
-    }
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
@@ -71,6 +72,13 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             @Param("quantidadeIdeal") BigDecimal quantidadeIdeal,
             @Param("atualizadoEm") LocalDateTime atualizadoEm
     );
+
+    @Query("""
+            SELECT p FROM Produto p
+            WHERE p.ativo = true
+            AND p.quantidadeAtual < p.quantidadeMinima
+        """)
+    List<Produto> buscarProdutosAbaixoDoMinimo();
 
     // POST /produtos/{id}/entrada|consumo|descarte|ajuste — atualiza SÓ a quantidade
     @Modifying
