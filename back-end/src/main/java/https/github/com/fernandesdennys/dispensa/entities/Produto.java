@@ -2,6 +2,10 @@ package https.github.com.fernandesdennys.dispensa.entities;
 
 import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 
@@ -10,6 +14,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tb_produto", uniqueConstraints = {@UniqueConstraint(name = "uk_produto_nome", columnNames = "nome")})
+@EntityListeners(AuditingEntityListener.class)
 public class Produto {
 
     @Id
@@ -39,10 +44,12 @@ public class Produto {
     @Column(nullable = false)
     private Boolean ativo = true;
 
-    @Column(nullable = false)
+    @CreatedDate
+    @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 
-    @Column(nullable = false)
+    @LastModifiedDate
+    @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 
     public Produto() {

@@ -1,11 +1,17 @@
 package https.github.com.fernandesdennys.dispensa.services;
 
+import https.github.com.fernandesdennys.dispensa.Mapper.ProdutoMapper;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.ProdutoInsertDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.ProdutoUpdateDTO;
 import https.github.com.fernandesdennys.dispensa.entities.Produto;
+import https.github.com.fernandesdennys.dispensa.exception.DatabaseException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 
 import https.github.com.fernandesdennys.dispensa.repositories.ProdutoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +24,9 @@ public class ProdutoService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private ProdutoMapper produtoMapper;
 
     @Transactional(readOnly = true)
     public Page<ProdutoDTO> buscarProdutosPorCategoria(
@@ -52,5 +61,30 @@ public class ProdutoService {
         return produtoRepository.findById(id)
                 .map(ProdutoDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto com ID " + id + " não encontrada"));
+    }
+
+    @Transactional
+    public ProdutoDTO insert(ProdutoInsertDTO dto) {
+        try {
+        Produto produto = produtoMapper.toEntity(dto);
+        produto = produtoRepository.save(produto);
+        return produtoMapper.toDTO(produto);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
+        }
+    }
+
+    @Transactional
+    public ProdutoDTO update(ProdutoUpdateDTO dto, Integer id) {
+        try {
+            Produto produto = produtoRepository.getReferenceById(id);
+            produtoMapper.updateEntity(dto, produto);
+            produto = produtoRepository.save(produto);
+            return produtoMapper.toDTO(produto);
+        } catch (EntityNotFoundException e) {
+            throw new ResourceNotFoundException("Produto com ID " + id + " não encontrado");
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
+        }
     }
 }

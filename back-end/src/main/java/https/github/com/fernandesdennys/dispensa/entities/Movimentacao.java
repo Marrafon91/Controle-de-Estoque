@@ -2,6 +2,8 @@ package https.github.com.fernandesdennys.dispensa.entities;
 
 import https.github.com.fernandesdennys.dispensa.entities.enums.TipoMovimentacao;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +11,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tb_movimentacao", indexes = {@Index(name = "idx_mov_produto_data", columnList = "produto_id, criado_em")})
+@EntityListeners(AuditingEntityListener.class)
 public class Movimentacao {
 
     @Id
@@ -29,13 +32,9 @@ public class Movimentacao {
     @Column(length = 255)
     private String observacao;
 
+    @CreatedDate
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
-
-    @PrePersist
-    protected void prePersist() {
-        criadoEm = LocalDateTime.now();
-    }
 
     public Movimentacao() {
     }

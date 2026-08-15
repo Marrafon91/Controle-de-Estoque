@@ -3,6 +3,7 @@ package https.github.com.fernandesdennys.dispensa.entities;
 import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
 import jakarta.persistence.*;
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class ListaCompra {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private StatusListaCompra status = StatusListaCompra.ABERTA;
+
 
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;

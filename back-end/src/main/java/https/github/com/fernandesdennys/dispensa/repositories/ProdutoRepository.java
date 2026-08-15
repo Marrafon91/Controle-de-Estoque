@@ -14,24 +14,14 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
                 FROM Produto p
                 JOIN FETCH p.categoria c
                 WHERE p.ativo = true
-                AND (
-                    :categoriaId IS NULL
-                    OR c.id = :categoriaId
-                )
-                AND (
-                    :abaixoMinimo = false
-                    OR p.quantidadeAtual < p.quantidadeMinima
-                )
-                AND (
-                    :busca IS NULL
-                    OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :busca, '%'))
-                )
+                AND (:categoriaId IS NULL OR c.id = :categoriaId)
+                AND (:abaixoMinimo = false OR p.quantidadeAtual < p.quantidadeMinima)
+                AND (:busca IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :busca, '%')))
                 ORDER BY
                     CASE
                         WHEN :ordenarPor = 'nome'
                         THEN p.nome
                     END ASC,
-            
                     CASE
                         WHEN :ordenarPor = 'quantidade_atual'
                         THEN p.quantidadeAtual
@@ -57,6 +47,4 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             @Param("ordenarPor") String ordenarPor,
             Pageable pageable
     );
-
-
 }
