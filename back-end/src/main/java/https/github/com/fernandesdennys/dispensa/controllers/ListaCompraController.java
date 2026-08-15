@@ -42,4 +42,9 @@ public class ListaCompraController {
     public ResponseEntity<ListaCompraDTO> finalizar(@PathVariable Integer id) {
         return ResponseEntity.ok(service.finalizar(id));
     }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<ListaCompraDTO> cancelar(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.cancelar(id));
+    }
 }

@@ -31,4 +31,13 @@ public interface ListaCompraRepository extends JpaRepository<ListaCompra, Intege
                 WHERE l.id = :id AND l.status = 'ABERTA'
             """)
     int finalizar(@Param("id") Integer id, @Param("status") StatusListaCompra status, @Param("finalizadoEm") LocalDateTime finalizadoEm);
+
+    @Modifying
+    @Transactional
+    @Query("""
+            UPDATE ListaCompra l
+            SET l.status = 'CANCELADA'
+            WHERE l.id = :id AND l.status = 'ABERTA'
+        """)
+    int cancelar(@Param("id") Integer id);
 }

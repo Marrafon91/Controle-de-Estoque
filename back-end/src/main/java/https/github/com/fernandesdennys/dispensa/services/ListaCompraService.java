@@ -6,13 +6,16 @@ import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraGerarDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraItemUpdateDTO;
 import https.github.com.fernandesdennys.dispensa.entities.ListaCompra;
 import https.github.com.fernandesdennys.dispensa.entities.ListaCompraItem;
+import https.github.com.fernandesdennys.dispensa.entities.Movimentacao;
 import https.github.com.fernandesdennys.dispensa.entities.Produto;
 import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
+import https.github.com.fernandesdennys.dispensa.entities.enums.TipoMovimentacao;
 import https.github.com.fernandesdennys.dispensa.exception.ListaJaFinalizadaException;
 import https.github.com.fernandesdennys.dispensa.exception.ListaVaziaException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 import https.github.com.fernandesdennys.dispensa.repositories.ListaCompraItemRepository;
 import https.github.com.fernandesdennys.dispensa.repositories.ListaCompraRepository;
+import https.github.com.fernandesdennys.dispensa.repositories.MovimentacaoRepository;
 import https.github.com.fernandesdennys.dispensa.repositories.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,9 @@ public class ListaCompraService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private MovimentacaoRepository movimentacaoRepository;
 
     @Autowired
     private ListaCompraMapper mapper;
@@ -74,7 +80,6 @@ public class ListaCompraService {
     // PATCH /listas/{id}/itens/{itemId}
     @Transactional
     public ListaCompraDTO atualizarItem(Integer listaId, Long itemId, ListaCompraItemUpdateDTO dto) {
-        // valida que o item pertence à lista antes de aplicar o update em bloco
         listaCompraItemRepository.buscarItemDaLista(listaId, itemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Item " + itemId + " não encontrado na lista " + listaId));
@@ -94,7 +99,7 @@ public class ListaCompraService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lista não encontrada: id " + id));
 
         if (lista.getStatus() != StatusListaCompra.ABERTA) {
-            throw new ListaJaFinalizadaException("Lista " + id + " já está finalizada");
+            throw new ListaJaFinalizadaException("Lista " + id + " já está finalizada ou cancelada");
         }
 
         List<ListaCompraItem> itensComprados = listaCompraItemRepository.buscarItensCompradosDaLista(id);
@@ -107,14 +112,33 @@ public class ListaCompraService {
             Produto produto = item.getProduto();
             BigDecimal novaQuantidade = produto.getQuantidadeAtual().add(quantidade);
 
+            // 1. atualiza o saldo do produto
             produtoRepository.atualizarQuantidade(produto.getId(), novaQuantidade, LocalDateTime.now());
+
+            // 2. registra a movimentação de entrada no histórico
+            Movimentacao movimentacao = new Movimentacao();
+            movimentacao.setProduto(produto);
+            movimentacao.setTipo(TipoMovimentacao.ENTRADA);
+            movimentacao.setQuantidade(quantidade);
+            movimentacao.setObservacao("Compra via lista #" + id);
+            movimentacaoRepository.save(movimentacao); // JPQL não suporta INSERT — save() é o caminho correto
         }
 
         int linhasAfetadas = listaCompraRepository.finalizar(id, StatusListaCompra.FINALIZADA, LocalDateTime.now());
         if (linhasAfetadas == 0) {
-            throw new ListaJaFinalizadaException("Lista " + id + " já está finalizada");
+            throw new ListaJaFinalizadaException("Lista " + id + " já está finalizada ou cancelada");
         }
 
+        return buscarPorId(id);
+    }
+
+    // POST /listas/{id}/cancelar
+    @Transactional
+    public ListaCompraDTO cancelar(Integer id) {
+        int linhasAfetadas = listaCompraRepository.cancelar(id);
+        if (linhasAfetadas == 0) {
+            throw new ResourceNotFoundException("Lista não encontrada ou já finalizada/cancelada: id " + id);
+        }
         return buscarPorId(id);
     }
 }
