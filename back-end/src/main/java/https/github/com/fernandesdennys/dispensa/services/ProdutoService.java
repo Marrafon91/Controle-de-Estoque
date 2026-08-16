@@ -3,11 +3,15 @@ package https.github.com.fernandesdennys.dispensa.services;
 import https.github.com.fernandesdennys.dispensa.Mapper.ProdutoMapper;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoInsertDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.ProdutoQuickInsertDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoUpdateDTO;
+import https.github.com.fernandesdennys.dispensa.entities.Categoria;
 import https.github.com.fernandesdennys.dispensa.entities.Produto;
+import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import https.github.com.fernandesdennys.dispensa.exception.DatabaseException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 
+import https.github.com.fernandesdennys.dispensa.repositories.CategoriaRepository;
 import https.github.com.fernandesdennys.dispensa.repositories.ProdutoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
@@ -28,6 +33,9 @@ public class ProdutoService {
 
     @Autowired
     private ProdutoMapper produtoMapper;
+
+    @Autowired
+    CategoriaRepository categoriaRepository;
 
     @Transactional(readOnly = true)
     public Page<ProdutoDTO> buscarProdutosPorCategoria(
@@ -52,6 +60,28 @@ public class ProdutoService {
         return produtoRepository.buscarPorId(id)
                 .map(ProdutoDTO::new)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto com ID " + id + " não encontrada"));
+    }
+
+    @Transactional
+    public ProdutoDTO criarRapido(ProdutoQuickInsertDTO dto) {
+        try {
+            Categoria categoria = categoriaRepository.buscarPorId(dto.categoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: id " + dto.categoriaId()));
+
+            Produto produto = new Produto();
+            produto.setNome(dto.nome());
+            produto.setCategoria(categoria);
+            produto.setUnidade(Unidade.UN);
+            produto.setQuantidadeAtual(dto.quantidadeAtual());
+            produto.setQuantidadeMinima(dto.quantidadeMinima());
+            produto.setQuantidadeIdeal(dto.quantidadeMinima().multiply(BigDecimal.valueOf(2))); // par padrão: 2x o mínimo
+            produto.setAtivo(true);
+
+            produto = produtoRepository.save(produto);
+            return produtoMapper.toDTO(produto);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
+        }
     }
 
     @Transactional

@@ -1,4 +1,4 @@
-export type Unidade = 'PCT' | 'G' | 'UN' | 'L' | 'ML' | 'KG';
+export type Unidade = "PCT" | "G" | "UN" | "L" | "ML" | "KG";
 
 export interface ProdutoDTO {
   id: number;
@@ -9,6 +9,7 @@ export interface ProdutoDTO {
   quantidadeMinima: number;
   quantidadeIdeal: number;
   ativo: boolean;
+  dataValidade: string | null; // formato ISO "2026-08-20"
 }
 
 export interface ProdutoInsertDTO {
@@ -18,6 +19,14 @@ export interface ProdutoInsertDTO {
   quantidadeAtual: number;
   quantidadeMinima: number;
   quantidadeIdeal: number;
+}
+
+export interface ProdutoQuickInsertDTO {
+  nome: string;
+  categoriaId: number;
+  quantidadeAtual: number;
+  quantidadeMinima: number;
+  dataValidade?: string;
 }
 
 export type ProdutoUpdateDTO = ProdutoInsertDTO;

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -51,6 +52,9 @@ public class Produto {
     @LastModifiedDate
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
+
+    @Column(name = "data_validade")
+    private LocalDate dataValidade;
 
     public Produto() {
     }
@@ -146,6 +150,14 @@ public class Produto {
 
     public void setAtualizadoEm(LocalDateTime atualizadoEm) {
         this.atualizadoEm = atualizadoEm;
+    }
+
+    public LocalDate getDataValidade() {
+        return dataValidade;
+    }
+
+    public void setDataValidade(LocalDate dataValidade) {
+        this.dataValidade = dataValidade;
     }
 
     @Override

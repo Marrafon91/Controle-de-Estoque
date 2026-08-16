@@ -2,6 +2,7 @@ import api from "./axios";
 import type {
   ProdutoDTO,
   ProdutoInsertDTO,
+  ProdutoQuickInsertDTO,
   ProdutoUpdateDTO,
 } from "../types/produto";
 import type { PageResponse } from "../types/page";
@@ -27,6 +28,10 @@ export const produtoService = {
 
   criar: (dto: ProdutoInsertDTO): Promise<AxiosResponse<ProdutoDTO>> =>
     api.post("/produtos", dto),
+
+  criarRapido: (
+    dto: ProdutoQuickInsertDTO,
+  ): Promise<AxiosResponse<ProdutoDTO>> => api.post("/produtos/rapido", dto),
 
   atualizar: (
     id: number,

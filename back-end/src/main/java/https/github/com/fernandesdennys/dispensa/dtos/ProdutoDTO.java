@@ -5,6 +5,7 @@ import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record ProdutoDTO(
         Integer id,
@@ -14,7 +15,8 @@ public record ProdutoDTO(
         BigDecimal quantidadeAtual,
         BigDecimal quantidadeMinima,
         BigDecimal quantidadeIdeal,
-        Boolean ativo
+        Boolean ativo,
+        LocalDate dataValidade
 ) {
     public ProdutoDTO(Produto entity) {
         this(
@@ -25,7 +27,8 @@ public record ProdutoDTO(
                 entity.getQuantidadeAtual(),
                 entity.getQuantidadeMinima(),
                 entity.getQuantidadeIdeal(),
-                entity.getAtivo()
+                entity.getAtivo(),
+                entity.getDataValidade()
         );
     }
 }

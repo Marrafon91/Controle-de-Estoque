@@ -3,6 +3,7 @@ package https.github.com.fernandesdennys.dispensa.controllers;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoDTO;
 
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoInsertDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.ProdutoQuickInsertDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ProdutoUpdateDTO;
 import https.github.com.fernandesdennys.dispensa.services.ProdutoService;
 import jakarta.validation.Valid;
@@ -48,6 +49,13 @@ public class ProdutoController {
     public ResponseEntity<ProdutoDTO> findById(@PathVariable Integer id) {
         ProdutoDTO result = produtoService.findById(id);
         return ResponseEntity.ok().body(result);
+    }
+
+    @PostMapping("/rapido")
+    public ResponseEntity<ProdutoDTO> criarRapido(@Valid @RequestBody ProdutoQuickInsertDTO dto) {
+        ProdutoDTO novoProduto = produtoService.criarRapido(dto);
+        URI uri = URI.create("/produtos/" + novoProduto.id());
+        return ResponseEntity.created(uri).body(novoProduto);
     }
 
     @PostMapping

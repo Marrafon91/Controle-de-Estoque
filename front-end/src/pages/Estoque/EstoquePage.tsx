@@ -4,6 +4,7 @@ import { produtoService } from "../../api/produtoService";
 import { categoriaService } from "../../api/categoriaService";
 import { movimentacaoService } from "../../api/movimentacaoService";
 import { AppHeader } from "../../components/AppHeader";
+import { diasParaVencer, precisaAlertarValidade } from "../../utils/validade";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
 import type { ApiError } from "../../types/error";
@@ -75,7 +76,7 @@ export function EstoquePage() {
       }
     } catch (err) {
       // reverte em caso de erro (ex: estoque insuficiente)
-      const erro = err as ApiError
+      const erro = err as ApiError;
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -110,7 +111,7 @@ export function EstoquePage() {
         quantidade: novaQuantidade,
       });
     } catch (err) {
-      const erro = err as ApiError
+      const erro = err as ApiError;
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -123,6 +124,24 @@ export function EstoquePage() {
         [produto.id]: erro.mensagem ?? "Erro ao ajustar estoque",
       }));
     }
+  }
+
+  function statusBadge(p: ProdutoDTO) {
+    const dias = diasParaVencer(p.dataValidade);
+
+    if (p.quantidadeAtual <= 0) {
+      return { texto: "ESGOTADO", classe: "bg-danger-100 text-danger-600" };
+    }
+    if (dias !== null && dias <= 7) {
+      return {
+        texto: dias <= 0 ? "VENCIDO" : `VENCE EM ${dias}D`,
+        classe: "bg-danger-100 text-danger-600",
+      };
+    }
+    if (p.quantidadeAtual < p.quantidadeMinima) {
+      return { texto: "BAIXO", classe: "bg-warn-100 text-warn-600" };
+    }
+    return null;
   }
 
   return (
@@ -170,27 +189,35 @@ export function EstoquePage() {
 
         <ul className="space-y-3">
           {produtosFiltrados.map((p) => {
-            const badge = statusBadge(p.quantidadeAtual, p.quantidadeMinima);
+            const badge = statusBadge(p);
             const categoriaNome =
               categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
+            const dias = diasParaVencer(p.dataValidade);
+            const alertaValidade =
+              precisaAlertarValidade(p.dataValidade) && p.quantidadeAtual > 0;
 
-            const corThumb =
-              p.quantidadeAtual <= 0
+            // a barra fica vermelha se a validade está no período de alerta,
+            // senão segue a lógica normal de nível de estoque
+            const corThumb = alertaValidade
+              ? "var(--color-danger-600)"
+              : p.quantidadeAtual <= 0
                 ? "var(--color-danger-600)"
                 : p.quantidadeAtual < p.quantidadeMinima
                   ? "var(--color-warn-600)"
                   : "var(--color-success-600)";
 
-            const percentual = Math.min(
-              100,
-              (p.quantidadeAtual / p.quantidadeIdeal) * 100,
-            );
-            const corPreenchida =
-              p.quantidadeAtual <= 0
+            const corPreenchida = alertaValidade
+              ? "#F43F5E"
+              : p.quantidadeAtual <= 0
                 ? "#F43F5E"
                 : p.quantidadeAtual < p.quantidadeMinima
                   ? "#F59E0B"
                   : "#22C55E";
+
+            const percentual = Math.min(
+              100,
+              (p.quantidadeAtual / p.quantidadeIdeal) * 100,
+            );
 
             return (
               <li
@@ -204,6 +231,16 @@ export function EstoquePage() {
                     </p>
                     <p className="text-[11px] text-slate-400">
                       {categoriaNome}
+                      {dias !== null && (
+                        <span
+                          className={
+                            alertaValidade ? "text-danger-600 font-medium" : ""
+                          }
+                        >
+                          {" · vence em "}
+                          {dias < 0 ? "vencido" : `${dias} dias`}
+                        </span>
+                      )}
                     </p>
                   </div>
                   {badge && (
@@ -251,7 +288,8 @@ export function EstoquePage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200"
+                      disabled={p.quantidadeAtual <= 0}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <Minus size={14} />
                     </button>

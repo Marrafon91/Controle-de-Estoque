@@ -4,6 +4,7 @@ import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record ProdutoInsertDTO(
 
@@ -33,6 +34,8 @@ public record ProdutoInsertDTO(
         @DecimalMin(value = "0.0", message = "A quantidade ideal não pode ser negativa")
         @Digits(integer = 7, fraction = 3,
                 message = "A quantidade ideal deve ter no máximo 7 dígitos inteiros e 3 casas decimais")
-        BigDecimal quantidadeIdeal
+        BigDecimal quantidadeIdeal,
+
+        LocalDate dataValidade
 ) {
 }

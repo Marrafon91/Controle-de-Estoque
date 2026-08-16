@@ -5,6 +5,7 @@ import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record ProdutoUpdateDTO(
 
@@ -37,7 +38,9 @@ public record ProdutoUpdateDTO(
         BigDecimal quantidadeIdeal,
 
         @NotNull(message = "O campo ativo é obrigatório")
-        Boolean ativo
+        Boolean ativo,
+
+        LocalDate dataValidade
 ) {
     public ProdutoUpdateDTO(Produto entity) {
         this(
@@ -47,7 +50,8 @@ public record ProdutoUpdateDTO(
                 entity.getQuantidadeAtual(),
                 entity.getQuantidadeMinima(),
                 entity.getQuantidadeIdeal(),
-                entity.getAtivo()
+                entity.getAtivo(),
+                entity.getDataValidade()
         );
     }
 }
