@@ -42,4 +42,7 @@ public interface ListaCompraItemRepository extends JpaRepository<ListaCompraItem
                 WHERE i.listaCompra.id = :listaId AND i.comprado = true
             """)
     List<ListaCompraItem> buscarItensCompradosDaLista(@Param("listaId") Integer listaId);
+
+    @Query("SELECT COUNT(i) > 0 FROM ListaCompraItem i WHERE i.listaCompra.id = :listaId AND i.produto.id = :produtoId")
+    boolean existeItemParaProduto(@Param("listaId") Integer listaId, @Param("produtoId") Integer produtoId);
 }

@@ -81,7 +81,7 @@ public class MovimentacaoService {
 
         if (resultante.compareTo(BigDecimal.ZERO) < 0) {
             throw new EstoqueInsuficienteException(
-                    "Estoque insuficiente: disponível " + produto.getQuantidadeAtual() + ", solicitado " + dto.quantidade());
+                    String.format("Estoque insuficiente: disponível %.1f, solicitado %.2f", produto.getQuantidadeAtual(), dto.quantidade()));
         }
 
         return aplicarMovimentacao(produto, tipo, dto, resultante);

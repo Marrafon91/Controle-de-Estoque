@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Check, Info, Minus, Plus } from "lucide-react";
 import { listaCompraService } from "../../api/listaCompraService";
+import { AdicionarItemModal } from "../../components/AdicionarItemModal";
 import type {
   ListaCompraDTO,
   ListaCompraItemDTO,
@@ -16,6 +17,7 @@ export function ListaComprasPage() {
   const [lista, setLista] = useState<ListaCompraDTO | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [erroPorItem, setErroPorItem] = useState<Record<number, string>>({});
+  const [modalAberto, setModalAberto] = useState(false);
 
   useEffect(() => {
     if (listaId) {
@@ -28,9 +30,15 @@ export function ListaComprasPage() {
       const res = await listaCompraService.buscarPorId(id);
       setLista(res.data);
     } catch (err) {
-      const erro = err as ApiError
+      const erro = err as ApiError;
       setErro(erro.mensagem ?? "Não foi possível carregar a lista.");
     }
+  }
+
+  async function adicionarItem(produtoId: number) {
+    if (!lista) return;
+    await listaCompraService.adicionarItem(lista.id, { produtoId });
+    await carregarLista(lista.id);
   }
 
   async function alterarQuantidade(item: ListaCompraItemDTO, delta: number) {
@@ -187,6 +195,26 @@ export function ListaComprasPage() {
         >
           Finalizar compra e dar entrada no estoque
         </button>
+      )}
+
+      <div className="mb-1 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-800">Lista de compras</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-400">{pendentes} pendentes</span>
+          <button
+            onClick={() => setModalAberto(true)}
+            className="bg-brand-600 hover:bg-brand-700 mt-2 flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      </div>
+      {modalAberto && (
+        <AdicionarItemModal
+          produtosJaNaLista={lista.itens.map((i) => i.produtoId)}
+          onConfirmar={adicionarItem}
+          onFechar={() => setModalAberto(false)}
+        />
       )}
     </div>
   );

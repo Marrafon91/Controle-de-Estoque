@@ -2,6 +2,7 @@ import api from "./axios";
 import type {
   ListaCompraDTO,
   ListaCompraGerarDTO,
+  ListaCompraItemInsertDTO,
   ListaCompraItemUpdateDTO,
   StatusListaCompra,
 } from "../types/listaCompra";
@@ -10,6 +11,9 @@ import type { AxiosResponse } from "axios";
 export const listaCompraService = {
   gerar: (dto: ListaCompraGerarDTO): Promise<AxiosResponse<ListaCompraDTO>> =>
     api.post("/listas/gerar", dto),
+
+  adicionarItem: ( listaId: number, dto: ListaCompraItemInsertDTO): Promise<AxiosResponse<ListaCompraDTO>> =>
+    api.post(`/listas/${listaId}/itens`, dto),
 
   sincronizar: (id: number): Promise<AxiosResponse<ListaCompraDTO>> =>
     api.post(`/listas/${id}/sincronizar`),

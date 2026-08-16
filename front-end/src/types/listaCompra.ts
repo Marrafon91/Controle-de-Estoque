@@ -26,3 +26,7 @@ export interface ListaCompraItemUpdateDTO {
   quantidadeComprada: number;
   comprado: boolean;
 }
+
+export interface ListaCompraItemInsertDTO {
+  produtoId: number;
+}

@@ -159,26 +159,28 @@ export function InicioPage() {
         <p className="mb-2 text-sm font-semibold text-slate-700">
           Por categoria
         </p>
+
         <div className="relative">
-          <div className="scroll-thin flex gap-2 overflow-x-auto pb-3">
+          <div className="grid grid-cols-2 gap-2 pb-3">
             {categorias.map((c) => {
               const count = produtos.filter(
                 (p) => p.categoriaId === c.id,
               ).length;
+
               return (
                 <div
                   key={c.id}
-                  className="min-w-27.5 shrink-0 rounded-xl border border-slate-100 bg-white px-3 py-2.5"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-100 bg-white px-2 py-2.5"
                 >
                   <p className="truncate text-xs font-semibold text-slate-700">
                     {c.nome}
                   </p>
+
                   <p className="text-[11px] text-slate-400">{count} itens</p>
                 </div>
               );
             })}
           </div>
-          <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-4 w-8 bg-linear-to-l to-transparent" />
         </div>
       </div>
     </div>

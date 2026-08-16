@@ -2,6 +2,7 @@ package https.github.com.fernandesdennys.dispensa.controllers;
 
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraGerarDTO;
+import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraItemInsertDTO;
 import https.github.com.fernandesdennys.dispensa.dtos.ListaCompraItemUpdateDTO;
 import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
 import https.github.com.fernandesdennys.dispensa.services.ListaCompraService;
@@ -25,6 +26,13 @@ public class ListaCompraController {
         ListaCompraDTO novaLista = service.gerar(dto);
         URI uri = URI.create("/listas/" + novaLista.id());
         return ResponseEntity.created(uri).body(novaLista);
+    }
+
+    @PostMapping("/{id}/itens")
+    public ResponseEntity<ListaCompraDTO> adicionarItem(
+            @PathVariable Integer id,
+            @Valid @RequestBody ListaCompraItemInsertDTO dto) {
+        return ResponseEntity.ok(service.adicionarItem(id, dto.produtoId()));
     }
 
     @PostMapping("/{id}/sincronizar")

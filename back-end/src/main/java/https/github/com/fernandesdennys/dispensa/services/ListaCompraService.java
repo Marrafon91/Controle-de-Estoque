@@ -10,6 +10,7 @@ import https.github.com.fernandesdennys.dispensa.entities.Movimentacao;
 import https.github.com.fernandesdennys.dispensa.entities.Produto;
 import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
 import https.github.com.fernandesdennys.dispensa.entities.enums.TipoMovimentacao;
+import https.github.com.fernandesdennys.dispensa.exception.ItemJaExisteNaListaException;
 import https.github.com.fernandesdennys.dispensa.exception.ListaJaFinalizadaException;
 import https.github.com.fernandesdennys.dispensa.exception.ListaVaziaException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
@@ -66,6 +67,38 @@ public class ListaCompraService {
             item.setComprado(false);
             lista.getItens().add(item); // cascade ALL persiste os itens junto
         }
+
+        lista = listaCompraRepository.save(lista);
+        return mapper.toDTO(lista);
+    }
+
+    @Transactional
+    public ListaCompraDTO adicionarItem(Integer listaId, Integer produtoId) {
+        ListaCompra lista = listaCompraRepository.buscarPorIdComItens(listaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lista não encontrada: id " + listaId));
+
+        if (lista.getStatus() != StatusListaCompra.ABERTA) {
+            throw new ListaJaFinalizadaException("Lista " + listaId + " já está finalizada ou cancelada");
+        }
+
+        if (listaCompraItemRepository.existeItemParaProduto(listaId, produtoId)) {
+            throw new ItemJaExisteNaListaException("Este produto já está na lista");
+        }
+
+        Produto produto = produtoRepository.buscarPorId(produtoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: id " + produtoId));
+
+        BigDecimal sugestao = produto.getQuantidadeIdeal().subtract(produto.getQuantidadeAtual());
+        if (sugestao.compareTo(BigDecimal.ZERO) <= 0) {
+            sugestao = BigDecimal.ONE;
+        }
+
+        ListaCompraItem item = new ListaCompraItem();
+        item.setListaCompra(lista);
+        item.setProduto(produto);
+        item.setQuantidadeSugerida(sugestao);
+        item.setComprado(false);
+        lista.getItens().add(item); // cascade ALL persiste o item junto
 
         lista = listaCompraRepository.save(lista);
         return mapper.toDTO(lista);

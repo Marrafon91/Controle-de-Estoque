@@ -17,6 +17,6 @@ public enum Unidade {
                 return u;
             }
         }
-        throw new IllegalArgumentException("Unidade inválida: " + value + " valores aceitos [Un, KG, G, L, ML, PCT]");
+        throw new IllegalArgumentException("Unidade inválida: " + value + " valores aceitos [UN, KG, G, L, ML, PCT]");
     }
 }
