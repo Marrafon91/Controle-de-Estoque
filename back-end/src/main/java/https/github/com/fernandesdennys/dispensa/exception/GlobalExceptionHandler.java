@@ -39,6 +39,13 @@ public class GlobalExceptionHandler {
         return causaRaiz.getMessage();
     }
 
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<CustomError> credenciaisInvalidas(Exception e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        CustomError err = new CustomError(Instant.now(), status.value(), "E-mail ou senha inválidos", request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<CustomError> forbidden(ForbiddenException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.FORBIDDEN;
