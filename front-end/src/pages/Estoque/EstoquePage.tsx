@@ -11,14 +11,6 @@ import type { ApiError } from "../../types/error";
 
 const STEP_PADRAO = 1;
 
-function statusBadge(atual: number, minima: number) {
-  if (atual <= 0)
-    return { texto: "ESGOTADO", classe: "bg-danger-100 text-danger-600" };
-  if (atual < minima)
-    return { texto: "BAIXO", classe: "bg-warn-100 text-warn-600" };
-  return null;
-}
-
 export function EstoquePage() {
   const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);

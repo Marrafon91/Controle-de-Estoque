@@ -12,7 +12,6 @@ import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompr
 import https.github.com.fernandesdennys.dispensa.entities.enums.TipoMovimentacao;
 import https.github.com.fernandesdennys.dispensa.exception.ItemJaExisteNaListaException;
 import https.github.com.fernandesdennys.dispensa.exception.ListaJaFinalizadaException;
-import https.github.com.fernandesdennys.dispensa.exception.ListaVaziaException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 import https.github.com.fernandesdennys.dispensa.repositories.ListaCompraItemRepository;
 import https.github.com.fernandesdennys.dispensa.repositories.ListaCompraRepository;
@@ -51,10 +50,6 @@ public class ListaCompraService {
     public ListaCompraDTO gerar(ListaCompraGerarDTO dto) {
         List<Produto> produtosAbaixoMinimo = produtoRepository.buscarProdutosAbaixoDoMinimo();
 
-        if (produtosAbaixoMinimo.isEmpty()) {
-            throw new ListaVaziaException("Nenhum produto está abaixo do estoque mínimo no momento");
-        }
-
         ListaCompra lista = new ListaCompra();
         lista.setTitulo(dto.titulo());
         lista.setStatus(StatusListaCompra.ABERTA);
@@ -65,7 +60,7 @@ public class ListaCompraService {
             item.setProduto(produto);
             item.setQuantidadeSugerida(produto.getQuantidadeIdeal().subtract(produto.getQuantidadeAtual()));
             item.setComprado(false);
-            lista.getItens().add(item); // cascade ALL persiste os itens junto
+            lista.getItens().add(item);
         }
 
         lista = listaCompraRepository.save(lista);

@@ -16,23 +16,12 @@ export function ComprasIndexPage() {
       .then(async (res) => {
         if (res.data.length > 0) {
           const id = res.data[0].id;
-          await listaCompraService.sincronizar(id); // adiciona itens novos que ficaram abaixo do mínimo
+          await listaCompraService.sincronizar(id);
           setListaIdAberta(id);
         } else {
           setListaIdAberta(null);
         }
       })
-      .catch((err) =>
-        setErro(err.mensagem ?? "Não foi possível carregar as listas."),
-      );
-  }, []);
-
-  useEffect(() => {
-    listaCompraService
-      .listar("ABERTA")
-      .then((res) =>
-        setListaIdAberta(res.data.length > 0 ? res.data[0].id : null),
-      )
       .catch((err) =>
         setErro(err.mensagem ?? "Não foi possível carregar as listas."),
       );
@@ -70,7 +59,7 @@ export function ComprasIndexPage() {
     <div className="bg-surface flex min-h-screen flex-col items-center justify-center px-6 pb-24 text-center">
       <p className="mb-1 font-bold text-slate-800">Nenhuma lista aberta</p>
       <p className="mb-5 text-sm text-slate-400">
-        Gere uma lista com base nos produtos abaixo do mínimo.
+        Comece uma lista e adicione os itens que precisar comprar.
       </p>
       {erro && <p className="text-danger-600 mb-3 text-xs">{erro}</p>}
       <button

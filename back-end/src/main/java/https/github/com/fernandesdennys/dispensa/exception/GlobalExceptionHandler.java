@@ -54,13 +54,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 
-    @ExceptionHandler(ListaVaziaException.class)
-    public ResponseEntity<CustomError> listaVazia(ListaVaziaException e, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
-        CustomError err = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(status).body(err);
-    }
-
     @ExceptionHandler(ItemJaExisteNaListaException.class)
     public ResponseEntity<CustomError> itemJaExiste(ItemJaExisteNaListaException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.CONFLICT;

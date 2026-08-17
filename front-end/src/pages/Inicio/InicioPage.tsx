@@ -6,10 +6,20 @@ import { categoriaService } from "../../api/categoriaService";
 import { AppHeader } from "../../components/AppHeader";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
+import { diasParaVencer } from "../../utils/validade";
 
 function badgeStatus(p: ProdutoDTO) {
-  if (p.quantidadeAtual <= 0)
+  const dias = diasParaVencer(p.dataValidade);
+
+  if (p.quantidadeAtual <= 0) {
     return { texto: "ESGOTADO", classe: "bg-danger-100 text-danger-600" };
+  }
+  if (dias !== null && dias <= 7) {
+    return {
+      texto: dias <= 0 ? "VENCIDO" : `VENCE EM ${dias}D`,
+      classe: "bg-danger-100 text-danger-600",
+    };
+  }
   return { texto: "BAIXO", classe: "bg-warn-100 text-warn-600" };
 }
 
@@ -71,46 +81,48 @@ export function InicioPage() {
           <p className="text-sm text-slate-400">Carregando…</p>
         ) : precisamAtencao.length > 0 ? (
           <>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">
-                Precisa de atenção
-              </p>
-              <span className="text-[11px] text-slate-400">
-                {precisamAtencao.length} itens
-              </span>
-            </div>
+            <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-3">
+              <div className="mb-3 flex items-center justify-between px-1">
+                <p className="text-sm font-semibold text-slate-700">
+                  Precisa de atenção
+                </p>
+                <span className="bg-danger-100 text-danger-600 rounded-full px-2 py-0.5 text-[11px] font-bold">
+                  {precisamAtencao.length} itens
+                </span>
+              </div>
 
-            <div className="relative mb-4">
-              <div className="scroll-thin -mx-5 flex gap-3 overflow-x-auto px-5 pb-3">
+              <div className="scroll-thin-y flex max-h-72 flex-col divide-y divide-slate-100 overflow-y-auto">
                 {precisamAtencao.map((p) => {
                   const badge = badgeStatus(p);
+                  const dias = diasParaVencer(p.dataValidade);
                   return (
                     <div
                       key={p.id}
-                      className="min-w-45 shrink-0 rounded-2xl border border-slate-100 bg-white p-3"
+                      className="flex items-center gap-3 px-1 py-3"
                     >
-                      <div className="mb-1 flex items-start justify-between">
-                        <div className="bg-brand-100 text-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold">
-                          {p.nome.charAt(0)}
-                        </div>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.classe}`}
-                        >
-                          {badge.texto}
-                        </span>
+                      <div className="bg-brand-100 text-brand-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold">
+                        {p.nome.charAt(0)}
                       </div>
-                      <p className="truncate text-sm font-semibold text-slate-800">
-                        {p.nome}
-                      </p>
-                      <p className="text-[11px] text-slate-400">
-                        {p.quantidadeAtual} {p.unidade.toLowerCase()} · min{" "}
-                        {p.quantidadeMinima}
-                      </p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-slate-800">
+                          {p.nome}
+                        </p>
+                        <p className="truncate text-[11px] text-slate-400">
+                          {categorias.find((c) => c.id === p.categoriaId)
+                            ?.nome ?? ""}
+                          {dias !== null &&
+                            ` · vence em ${dias < 0 ? "vencido" : `${dias} dias`}`}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.classe}`}
+                      >
+                        {badge.texto}
+                      </span>
                     </div>
                   );
                 })}
               </div>
-              {/* <div className="from-surface pointer-events-none absolute top-0 right-5 bottom-4 w-8 bg-linear-to-l to-transparent" /> */}
             </div>
 
             <Link
@@ -160,27 +172,22 @@ export function InicioPage() {
           Por categoria
         </p>
 
-        <div className="relative">
-          <div className="grid grid-cols-2 gap-2 pb-3">
-            {categorias.map((c) => {
-              const count = produtos.filter(
-                (p) => p.categoriaId === c.id,
-              ).length;
+        <div className="grid grid-cols-2 gap-2 pb-3">
+          {categorias.map((c) => {
+            const count = produtos.filter((p) => p.categoriaId === c.id).length;
 
-              return (
-                <div
-                  key={c.id}
-                  className="min-w-0 flex-1 rounded-xl border border-slate-100 bg-white px-2 py-2.5"
-                >
-                  <p className="truncate text-xs font-semibold text-slate-700">
-                    {c.nome}
-                  </p>
-
-                  <p className="text-[11px] text-slate-400">{count} itens</p>
-                </div>
-              );
-            })}
-          </div>
+            return (
+              <div
+                key={c.id}
+                className="min-w-0 flex-1 rounded-xl border border-slate-100 bg-white px-2 py-2.5"
+              >
+                <p className="truncate text-xs font-semibold text-slate-700">
+                  {c.nome}
+                </p>
+                <p className="text-[11px] text-slate-400">{count} itens</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
