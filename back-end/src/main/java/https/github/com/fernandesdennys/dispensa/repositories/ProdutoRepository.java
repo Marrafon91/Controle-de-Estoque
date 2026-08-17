@@ -19,8 +19,8 @@ import java.util.Optional;
 public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
     // GET /produtos/{id}
-    @Query("SELECT p FROM Produto p JOIN FETCH p.categoria WHERE p.id = :id AND p.ativo = true")
-    Optional<Produto> buscarPorId(@Param("id") Integer id);
+    @Query("SELECT p FROM Produto p JOIN FETCH p.categoria WHERE p.id = :id AND p.usuario.id = :usuarioId AND p.ativo = true")
+    Optional<Produto> buscarPorId(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId);
 
     // GET /produtos (listagem com filtro/ordenação/paginação)
     @Query("""
@@ -41,7 +41,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             """)
     Page<Produto> buscarProdutos(
             @Param("categoriaId") Integer categoriaId,
-            @Param("abaixoMinimo") Boolean abaixoMinimo,
+            Integer id, @Param("abaixoMinimo") Boolean abaixoMinimo,
             @Param("busca") String busca,
             @Param("ordenarPor") String ordenarPor,
             Pageable pageable
@@ -73,12 +73,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             @Param("atualizadoEm") LocalDateTime atualizadoEm
     );
 
-    @Query("""
-            SELECT p FROM Produto p
-            WHERE p.ativo = true
-            AND p.quantidadeAtual < p.quantidadeMinima
-        """)
-    List<Produto> buscarProdutosAbaixoDoMinimo();
+    @Query("SELECT p FROM Produto p WHERE p.ativo = true AND p.usuario.id = :usuarioId AND p.quantidadeAtual < p.quantidadeMinima")
+    List<Produto> buscarProdutosAbaixoDoMinimo(@Param("usuarioId") Integer usuarioId);
 
     // POST /produtos/{id}/entrada|consumo|descarte|ajuste — atualiza SÓ a quantidade
     @Modifying
@@ -94,5 +90,5 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     @Modifying
     @Transactional
     @Query("UPDATE Produto p SET p.ativo = false, p.atualizadoEm = :atualizadoEm WHERE p.id = :id AND p.ativo = true")
-    int softDelete(@Param("id") Integer id, @Param("atualizadoEm") LocalDateTime atualizadoEm);
+    int softDelete(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId, @Param("atualizadoEm") LocalDateTime atualizadoEm);
 }

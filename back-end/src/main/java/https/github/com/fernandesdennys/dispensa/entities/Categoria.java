@@ -14,6 +14,10 @@ public class Categoria {
     @Column(nullable = false, length = 60, unique = true)
     private String nome;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "categoria")
     private List<Produto> produtos = new ArrayList<>();
 
@@ -43,6 +47,14 @@ public class Categoria {
 
     public List<Produto> getProdutos() {
         return produtos;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     @Override

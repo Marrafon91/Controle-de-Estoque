@@ -8,15 +8,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface CategoriaRepository extends JpaRepository<Categoria,Integer> {
+public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
 
-    @Query("""
-        SELECT c
-        FROM Categoria c
-        ORDER BY c.nome
-    """)
-    List<Categoria> buscarTodas();
+    @Query("SELECT c FROM Categoria c WHERE c.usuario.id = :usuarioId ORDER BY c.nome")
+    List<Categoria> buscarTodas(@Param("usuarioId") Integer usuarioId);
 
-    @Query("SELECT c FROM Categoria c WHERE c.id = :id")
-    Optional<Categoria> buscarPorId(@Param("id") Integer id);
+    @Query("SELECT c FROM Categoria c WHERE c.id = :id AND c.usuario.id = :usuarioId")
+    Optional<Categoria> buscarPorId(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId);
 }

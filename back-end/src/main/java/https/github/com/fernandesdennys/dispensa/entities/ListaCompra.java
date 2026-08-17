@@ -3,7 +3,6 @@ package https.github.com.fernandesdennys.dispensa.entities;
 import https.github.com.fernandesdennys.dispensa.entities.enums.StatusListaCompra;
 import jakarta.persistence.*;
 
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +23,9 @@ public class ListaCompra {
     @Column(nullable = false, length = 10)
     private StatusListaCompra status = StatusListaCompra.ABERTA;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
@@ -41,66 +43,32 @@ public class ListaCompra {
     @PrePersist
     protected void prePersist() {
         criadoEm = LocalDateTime.now();
-
         if (status == null) {
             status = StatusListaCompra.ABERTA;
         }
     }
 
-    public ListaCompra() {
-    }
+    public ListaCompra() {}
 
-    public ListaCompra(Integer id, String titulo, StatusListaCompra status, LocalDateTime criadoEm, LocalDateTime finalizadoEm) {
-        this.id = id;
-        this.titulo = titulo;
-        this.status = status;
-        this.criadoEm = criadoEm;
-        this.finalizadoEm = finalizadoEm;
-    }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public Integer getId() {
-        return id;
-    }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public StatusListaCompra getStatus() { return status; }
+    public void setStatus(StatusListaCompra status) { this.status = status; }
 
-    public String getTitulo() {
-        return titulo;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
+    public LocalDateTime getCriadoEm() { return criadoEm; }
+    public void setCriadoEm(LocalDateTime criadoEm) { this.criadoEm = criadoEm; }
 
-    public StatusListaCompra getStatus() {
-        return status;
-    }
+    public LocalDateTime getFinalizadoEm() { return finalizadoEm; }
+    public void setFinalizadoEm(LocalDateTime finalizadoEm) { this.finalizadoEm = finalizadoEm; }
 
-    public void setStatus(StatusListaCompra status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCriadoEm() {
-        return criadoEm;
-    }
-
-    public void setCriadoEm(LocalDateTime criadoEm) {
-        this.criadoEm = criadoEm;
-    }
-
-    public LocalDateTime getFinalizadoEm() {
-        return finalizadoEm;
-    }
-
-    public void setFinalizadoEm(LocalDateTime finalizadoEm) {
-        this.finalizadoEm = finalizadoEm;
-    }
-
-    public List<ListaCompraItem> getItens() {
-        return itens;
-    }
+    public List<ListaCompraItem> getItens() { return itens; }
 
     @Override
     public boolean equals(Object o) {

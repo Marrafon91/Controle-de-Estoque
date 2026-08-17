@@ -60,7 +60,7 @@ public class ProdutoController {
 
     @PostMapping
     public ResponseEntity<ProdutoDTO> insertProduct(@RequestBody @Valid ProdutoInsertDTO dto) {
-        ProdutoDTO result = produtoService.insert(dto);
+        ProdutoDTO result = produtoService.inserir(dto);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(result.id()).toUri();
         return ResponseEntity.created(uri).body(result);

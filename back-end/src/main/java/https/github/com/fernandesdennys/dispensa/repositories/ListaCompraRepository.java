@@ -14,40 +14,39 @@ import java.util.Optional;
 
 public interface ListaCompraRepository extends JpaRepository<ListaCompra, Integer> {
 
-    // GET /listas/{id} — JOIN FETCH em itens + produto pra evitar N+1 na serialização
     @Query("""
                 SELECT DISTINCT l FROM ListaCompra l
                 LEFT JOIN FETCH l.itens i
                 LEFT JOIN FETCH i.produto
-                WHERE l.id = :id
+                WHERE l.id = :id AND l.usuario.id = :usuarioId
             """)
-    Optional<ListaCompra> buscarPorIdComItens(@Param("id") Integer id);
+    Optional<ListaCompra> buscarPorIdComItens(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId);
 
-    // POST /listas/{id}/finalizar
+    @Query("""
+                SELECT DISTINCT l FROM ListaCompra l
+                LEFT JOIN FETCH l.itens i
+                LEFT JOIN FETCH i.produto
+                WHERE l.usuario.id = :usuarioId
+                AND (:status IS NULL OR l.status = :status)
+                ORDER BY l.criadoEm DESC
+            """)
+    List<ListaCompra> buscarTodas(@Param("usuarioId") Integer usuarioId, @Param("status") StatusListaCompra status);
+
     @Modifying
     @Transactional
     @Query("""
                 UPDATE ListaCompra l
                 SET l.status = :status, l.finalizadoEm = :finalizadoEm
-                WHERE l.id = :id AND l.status = 'ABERTA'
+                WHERE l.id = :id AND l.usuario.id = :usuarioId AND l.status = 'ABERTA'
             """)
-    int finalizar(@Param("id") Integer id, @Param("status") StatusListaCompra status, @Param("finalizadoEm") LocalDateTime finalizadoEm);
+    int finalizar(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId,
+                  @Param("status") StatusListaCompra status, @Param("finalizadoEm") LocalDateTime finalizadoEm);
 
     @Modifying
     @Transactional
     @Query("""
-            UPDATE ListaCompra l
-            SET l.status = 'CANCELADA'
-            WHERE l.id = :id AND l.status = 'ABERTA'
-        """)
-    int cancelar(@Param("id") Integer id);
-
-    @Query("""
-            SELECT DISTINCT l FROM ListaCompra l
-            LEFT JOIN FETCH l.itens i
-            LEFT JOIN FETCH i.produto
-            WHERE (:status IS NULL OR l.status = :status)
-            ORDER BY l.criadoEm DESC
-        """)
-    List<ListaCompra> buscarTodas(@Param("status") StatusListaCompra status);
+                UPDATE ListaCompra l SET l.status = 'CANCELADA'
+                WHERE l.id = :id AND l.usuario.id = :usuarioId AND l.status = 'ABERTA'
+            """)
+    int cancelar(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId);
 }
