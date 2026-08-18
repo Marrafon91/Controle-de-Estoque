@@ -7,6 +7,7 @@ import { AppHeader } from "../../components/AppHeader";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
 import { diasParaVencer } from "../../utils/validade";
+import Button from "../../components/Button";
 
 function badgeStatus(p: ProdutoDTO) {
   const dias = diasParaVencer(p.dataValidade);
@@ -144,28 +145,25 @@ export function InicioPage() {
         )}
 
         <div className="mb-6 grid grid-cols-2 gap-3">
-          <Link
-            to="/estoque"
-            className="bg-success-500 flex flex-col items-center justify-center gap-1.5 rounded-2xl py-5 text-white"
-          >
+          <Button to="/estoque" variant="entrada">
             <PlusCircle size={22} />
+
             <span className="text-center text-xs leading-tight font-semibold">
               Nova entrada
               <br />
               no estoque
             </span>
-          </Link>
-          <Link
-            to="/estoque"
-            className="bg-info-600 flex flex-col items-center justify-center gap-1.5 rounded-2xl py-5 text-white"
-          >
+          </Button>
+
+          <Button to="/estoque" variant="registro">
             <ClipboardList size={22} />
+
             <span className="text-center text-xs leading-tight font-semibold">
               Registrar
               <br />
               consumo
             </span>
-          </Link>
+          </Button>
         </div>
 
         <p className="mb-2 text-sm font-semibold text-slate-700">
