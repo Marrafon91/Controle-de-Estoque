@@ -13,17 +13,21 @@ import java.util.List;
 public class CategoriaController {
 
     @Autowired
-    private CategoriaService categoriaService;
+    private CategoriaService service;
 
     @GetMapping
-    public ResponseEntity<List<CategoriaDTO>> findAllCategories() {
-        List<CategoriaDTO> result = categoriaService.findAll();
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<CategoriaDTO>> findAll() {
+        return ResponseEntity.ok(service.findAll());
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<CategoriaDTO> findCategoriesById(@PathVariable Integer id) {
-        CategoriaDTO result = categoriaService.findById(id);
-        return ResponseEntity.ok().body(result);
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoriaDTO> findById(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.findById(id));
+    }
+
+    @PostMapping("/seed-padrao")
+    public ResponseEntity<Void> semearPadrao() {
+        service.semearPadrao();
+        return ResponseEntity.noContent().build();
     }
 }

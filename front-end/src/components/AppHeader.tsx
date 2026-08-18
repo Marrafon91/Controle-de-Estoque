@@ -1,5 +1,6 @@
-import { Package } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { LogOut, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AppHeaderProps {
   totalProdutos: number;
@@ -12,14 +13,30 @@ export function AppHeader({
   estoqueBaixo,
   esgotados,
 }: AppHeaderProps) {
+  const { usuario, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleAuthClick() {
+    if (isAuthenticated) {
+      if (window.confirm("Deseja sair da sua conta?")) {
+        logout();
+        navigate("/login");
+      }
+    } else {
+      navigate("/login");
+    }
+  }
+
+  const iniciais = usuario?.nome
+    ? usuario.nome.trim().slice(0, 3).toUpperCase()
+    : "DNS";
+
   return (
-    <header className="from-brand-600 to-brand-700 bg-linear-to-br px-5 pt-5 pb-6 text-white">
+    <header className="from-brand-600 to-brand-700 rounded-b-3xl bg-gradient-to-br px-5 pt-5 pb-6 text-white">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#BFFE44] text-xs font-bold text-[#1F1F51]">
-            <Link to="/">
-              <Package />
-            </Link>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-xs font-bold">
+            {iniciais}
           </div>
           <div>
             <p className="text-sm leading-none font-bold">StockHouse</p>
@@ -28,8 +45,11 @@ export function AppHeader({
             </p>
           </div>
         </div>
-        <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#BFFE44] text-sm text-[#1F1F51]">
-          +
+        <button
+          onClick={handleAuthClick}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-sm"
+        >
+          {isAuthenticated ? <LogOut size={14} /> : <LogIn size={14} />}
         </button>
       </div>
 

@@ -7,4 +7,7 @@ export const categoriaService = {
 
   buscarPorId: (id: number): Promise<AxiosResponse<CategoriaDTO>> =>
     api.get(`/categorias/${id}`),
+
+  semearPadrao: (): Promise<AxiosResponse<void>> =>
+    api.post("/categorias/seed-padrao"),
 };

@@ -21,6 +21,7 @@ export function AdicionarItemModal({
   const [aba, setAba] = useState<Aba>("existente");
   const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
+  const [carregandoCategorias, setCarregandoCategorias] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -34,21 +35,49 @@ export function AdicionarItemModal({
   const [quantidade, setQuantidade] = useState("");
   const [estoqueMinimo, setEstoqueMinimo] = useState("");
   const [dataValidade, setDataValidade] = useState("");
+  const [buscaProduto, setBuscaProduto] = useState("");
+  const [sugestoesAbertas, setSugestoesAbertas] = useState(false);
 
   useEffect(() => {
     produtoService
       .listar({ size: 200 })
       .then((r) => setProdutos(r.data.content));
-    categoriaService.listar().then((r) => setCategorias(r.data));
+    carregarCategorias();
   }, []);
+
+  async function carregarCategorias() {
+    setCarregandoCategorias(true);
+    try {
+      const res = await categoriaService.listar();
+      setCategorias(res.data);
+    } catch (err: any) {
+      setErro(err.mensagem ?? "Não foi possível carregar as categorias.");
+    } finally {
+      setCarregandoCategorias(false);
+    }
+  }
+
+  async function criarCategoriasPadrao() {
+    setEnviando(true);
+    setErro(null);
+    try {
+      await categoriaService.semearPadrao();
+      await carregarCategorias();
+    } catch (err: any) {
+      setErro(err.mensagem ?? "Não foi possível criar as categorias.");
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   const produtosDisponiveis = useMemo(() => {
     return produtos.filter(
       (p) =>
         (categoriaFiltro === "" || p.categoriaId === categoriaFiltro) &&
-        !produtosJaNaLista.includes(p.id),
+        !produtosJaNaLista.includes(p.id) &&
+        p.nome.toLowerCase().includes(buscaProduto.toLowerCase()),
     );
-  }, [produtos, categoriaFiltro, produtosJaNaLista]);
+  }, [produtos, categoriaFiltro, produtosJaNaLista, buscaProduto]);
 
   async function confirmarExistente() {
     if (!produtoId) {
@@ -141,7 +170,28 @@ export function AdicionarItemModal({
           </div>
         )}
 
-        {aba === "existente" ? (
+        {carregandoCategorias ? (
+          <p className="py-6 text-center text-sm text-slate-400">Carregando…</p>
+        ) : categorias.length === 0 ? (
+          // Estado vazio: usuário ainda não tem nenhuma categoria — sem isso,
+          // nem o select nem os pills de categoria têm o que mostrar,
+          // e o usuário fica travado sem conseguir adicionar nada.
+          <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center">
+            <p className="text-sm font-semibold text-slate-500">
+              Nenhuma categoria cadastrada
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Crie as categorias padrão pra começar a adicionar produtos.
+            </p>
+            <button
+              onClick={criarCategoriasPadrao}
+              disabled={enviando}
+              className="bg-brand-600 mt-3 rounded-xl px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              {enviando ? "Criando…" : "Criar categorias padrão"}
+            </button>
+          </div>
+        ) : aba === "existente" ? (
           <>
             <label className="mb-3 block text-sm font-medium text-slate-700">
               Categoria
@@ -152,6 +202,7 @@ export function AdicionarItemModal({
                     e.target.value ? Number(e.target.value) : "",
                   );
                   setProdutoId("");
+                  setBuscaProduto("");
                 }}
                 className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
               >
@@ -164,28 +215,48 @@ export function AdicionarItemModal({
               </select>
             </label>
 
-            <label className="mb-5 block text-sm font-medium text-slate-700">
-              Produto
-              <select
-                value={produtoId}
-                onChange={(e) =>
-                  setProdutoId(e.target.value ? Number(e.target.value) : "")
-                }
-                className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
-              >
-                <option value="">Selecione um produto</option>
-                {produtosDisponiveis.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome}
-                  </option>
-                ))}
-              </select>
-              {produtosDisponiveis.length === 0 && (
-                <p className="mt-1 text-[11px] text-slate-400">
-                  Nenhum produto disponível — tente criar um novo.
-                </p>
+            <div className="relative mb-5">
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Produto
+              </label>
+              <input
+                value={buscaProduto}
+                onChange={(e) => {
+                  setBuscaProduto(e.target.value);
+                  setProdutoId(""); // desfaz seleção anterior enquanto o usuário digita
+                  setSugestoesAbertas(true);
+                }}
+                onFocus={() => setSugestoesAbertas(true)}
+                onBlur={() => setTimeout(() => setSugestoesAbertas(false), 150)} // delay pra permitir o clique na sugestão
+                placeholder="Digite o nome do produto"
+                className="focus:ring-brand-500/30 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
+              />
+
+              {sugestoesAbertas && buscaProduto && (
+                <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                  {produtosDisponiveis.length === 0 ? (
+                    <p className="px-3 py-2.5 text-xs text-slate-400">
+                      Nenhum produto encontrado
+                    </p>
+                  ) : (
+                    produtosDisponiveis.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setProdutoId(p.id);
+                          setBuscaProduto(p.nome);
+                          setSugestoesAbertas(false);
+                        }}
+                        className="block w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50"
+                      >
+                        {p.nome}
+                      </button>
+                    ))
+                  )}
+                </div>
               )}
-            </label>
+            </div>
 
             <div className="flex gap-3">
               <button
