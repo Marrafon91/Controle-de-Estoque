@@ -13,15 +13,26 @@ interface ListarProdutosParams {
   abaixoMinimo?: boolean;
   busca?: string;
   ordenarPor?: string;
-  page?: number;
-  size?: number;
+
+  // Paginação do backend
+  limite?: number;
+  offset?: number;
 }
 
 export const produtoService = {
   listar: (
     params?: ListarProdutosParams,
   ): Promise<AxiosResponse<PageResponse<ProdutoDTO>>> =>
-    api.get("/produtos", { params }),
+    api.get("/produtos", {
+      params: {
+        categoria_id: params?.categoriaId,
+        abaixo_minimo: params?.abaixoMinimo,
+        busca: params?.busca,
+        ordenar_por: params?.ordenarPor,
+        limite: params?.limite,
+        offset: params?.offset,
+      },
+    }),
 
   buscarPorId: (id: number): Promise<AxiosResponse<ProdutoDTO>> =>
     api.get(`/produtos/${id}`),

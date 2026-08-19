@@ -53,19 +53,21 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     @Modifying
     @Transactional
     @Query("""
-                UPDATE Produto p
-                SET p.nome = :nome,
-                    p.categoria = :categoria,
-                    p.unidade = :unidade,
-                    p.quantidadeAtual = :quantidadeAtual,
-                    p.quantidadeMinima = :quantidadeMinima,
-                    p.quantidadeIdeal = :quantidadeIdeal,
-                    p.atualizadoEm = :atualizadoEm
-                WHERE p.id = :id
-                AND p.ativo = true
-            """)
+    UPDATE Produto p
+    SET p.nome = :nome,
+        p.categoria = :categoria,
+        p.unidade = :unidade,
+        p.quantidadeAtual = :quantidadeAtual,
+        p.quantidadeMinima = :quantidadeMinima,
+        p.quantidadeIdeal = :quantidadeIdeal,
+        p.atualizadoEm = :atualizadoEm
+    WHERE p.id = :id
+      AND p.usuario.id = :usuarioId
+      AND p.ativo = true
+""")
     int atualizarProduto(
             @Param("id") Integer id,
+            @Param("usuarioId") Integer usuarioId,
             @Param("nome") String nome,
             @Param("categoria") Categoria categoria,
             @Param("unidade") Unidade unidade,
@@ -82,15 +84,34 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     @Modifying
     @Transactional
     @Query("""
-                UPDATE Produto p
-                SET p.quantidadeAtual = :quantidadeAtual, p.atualizadoEm = :atualizadoEm
-                WHERE p.id = :id AND p.ativo = true
-            """)
-    int atualizarQuantidade(@Param("id") Integer id, @Param("quantidadeAtual") BigDecimal quantidadeAtual, @Param("atualizadoEm") LocalDateTime atualizadoEm);
+    UPDATE Produto p
+    SET p.quantidadeAtual = :quantidadeAtual,
+        p.atualizadoEm = :atualizadoEm
+    WHERE p.id = :id
+      AND p.usuario.id = :usuarioId
+      AND p.ativo = true
+""")
+    int atualizarQuantidade(
+            @Param("id") Integer id,
+            @Param("usuarioId") Integer usuarioId,
+            @Param("quantidadeAtual") BigDecimal quantidadeAtual,
+            @Param("atualizadoEm") LocalDateTime atualizadoEm
+    );
 
     // DELETE /produtos/{id} — soft delete
     @Modifying
     @Transactional
-    @Query("UPDATE Produto p SET p.ativo = false, p.atualizadoEm = :atualizadoEm WHERE p.id = :id AND p.ativo = true")
-    int softDelete(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId, @Param("atualizadoEm") LocalDateTime atualizadoEm);
+    @Query("""
+    UPDATE Produto p
+    SET p.ativo = false,
+        p.atualizadoEm = :atualizadoEm
+    WHERE p.id = :id
+      AND p.usuario.id = :usuarioId
+      AND p.ativo = true
+""")
+    int softDelete(
+            @Param("id") Integer id,
+            @Param("usuarioId") Integer usuarioId,
+            @Param("atualizadoEm") LocalDateTime atualizadoEm
+    );
 }

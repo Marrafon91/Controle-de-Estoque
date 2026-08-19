@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { Edit, Minus, Plus, Search } from "lucide-react";
+
 import { produtoService } from "../../api/produtoService";
 import { categoriaService } from "../../api/categoriaService";
 import { movimentacaoService } from "../../api/movimentacaoService";
+
 import { AppHeader } from "../../components/AppHeader";
 import { EditarProdutoModal } from "../../components/EditarProdutoModal";
+
 import { diasParaVencer, precisaAlertarValidade } from "../../utils/validade";
+
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
 import type { ApiError } from "../../types/error";
 
 const STEP_PADRAO = 1;
+const LIMITE_POR_PAGINA = 10;
 
 export function EstoquePage() {
   const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
+
   const [busca, setBusca] = useState("");
 
   const [categoriaAtiva, setCategoriaAtiva] = useState<number | "todos">(
@@ -29,23 +35,96 @@ export function EstoquePage() {
     null,
   );
 
+  // ================================
+  // PAGINAÇÃO
+  // ================================
+
+  const [offset, setOffset] = useState(0);
+
+  const [temMaisProdutos, setTemMaisProdutos] = useState(true);
+
+  const [carregandoProdutos, setCarregandoProdutos] = useState(false);
+
+  const [carregandoMais, setCarregandoMais] = useState(false);
+
+  // ================================
+  // CARREGAMENTO INICIAL
+  // ================================
+
   useEffect(() => {
-    carregarDados();
+    carregarDadosIniciais();
   }, []);
 
-  async function carregarDados() {
+  async function carregarDadosIniciais() {
+    setCarregandoProdutos(true);
+
     try {
       const [produtosResponse, categoriasResponse] = await Promise.all([
-        produtoService.listar({ size: 100 }),
+        produtoService.listar({
+          limite: LIMITE_POR_PAGINA,
+          offset: 0,
+        }),
+
         categoriaService.listar(),
       ]);
 
-      setProdutos(produtosResponse.data.content);
+      const pagina = produtosResponse.data;
+
+      setProdutos(pagina.content);
+
       setCategorias(categoriasResponse.data);
+
+      // Guarda o próximo offset
+      setOffset(pagina.content.length);
+
+      // Se retornou menos de 10, não existe próxima página
+      setTemMaisProdutos(!pagina.last);
     } catch (err) {
       console.error(err);
+    } finally {
+      setCarregandoProdutos(false);
     }
   }
+
+  // ================================
+  // CARREGAR MAIS
+  // ================================
+
+  async function carregarMais() {
+    if (carregandoMais || !temMaisProdutos) {
+      return;
+    }
+
+    setCarregandoMais(true);
+
+    try {
+      const response = await produtoService.listar({
+        limite: LIMITE_POR_PAGINA,
+        offset,
+      });
+
+      const pagina = response.data;
+
+      // IMPORTANTE:
+      // concatena os novos produtos com os existentes
+      setProdutos((prev) => [...prev, ...pagina.content]);
+
+      // Atualiza o offset para a próxima página
+      setOffset((prev) => prev + pagina.content.length);
+
+      // Quando Spring disser que chegou na última página,
+      // escondemos o botão
+      setTemMaisProdutos(!pagina.last);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCarregandoMais(false);
+    }
+  }
+
+  // ================================
+  // FILTROS
+  // ================================
 
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((p) => {
@@ -58,6 +137,10 @@ export function EstoquePage() {
     });
   }, [produtos, busca, categoriaAtiva]);
 
+  // ================================
+  // INDICADORES
+  // ================================
+
   const totalProdutos = produtos.length;
 
   const estoqueBaixo = produtos.filter(
@@ -66,6 +149,10 @@ export function EstoquePage() {
 
   const esgotados = produtos.filter((p) => p.quantidadeAtual <= 0).length;
 
+  // ================================
+  // ALTERAR QUANTIDADE
+  // ================================
+
   async function ajustarQuantidade(produto: ProdutoDTO, delta: number) {
     setErroPorProduto((prev) => ({
       ...prev,
@@ -73,8 +160,10 @@ export function EstoquePage() {
     }));
 
     const quantidadeAnterior = produto.quantidadeAtual;
+
     const novaQuantidade = quantidadeAnterior + delta;
 
+    // Atualização otimista
     setProdutos((prev) =>
       prev.map((p) =>
         p.id === produto.id
@@ -99,6 +188,7 @@ export function EstoquePage() {
     } catch (err) {
       const erro = err as ApiError;
 
+      // Reverte
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -117,10 +207,11 @@ export function EstoquePage() {
     }
   }
 
-  function atualizarLocalmenteDurranteArraste(
-    produtoId: number,
-    valor: number,
-  ) {
+  // ================================
+  // SLIDER
+  // ================================
+
+  function atualizarLocalmenteDuranteArraste(produtoId: number, valor: number) {
     setProdutos((prev) =>
       prev.map((p) =>
         p.id === produtoId
@@ -166,6 +257,10 @@ export function EstoquePage() {
     }
   }
 
+  // ================================
+  // EDIÇÃO
+  // ================================
+
   function abrirEdicao(produto: ProdutoDTO) {
     setProdutoEditando(produto);
   }
@@ -181,6 +276,10 @@ export function EstoquePage() {
 
     setProdutoEditando(null);
   }
+
+  // ================================
+  // BADGE
+  // ================================
 
   function statusBadge(p: ProdutoDTO) {
     const dias = diasParaVencer(p.dataValidade);
@@ -208,6 +307,10 @@ export function EstoquePage() {
 
     return null;
   }
+
+  // ================================
+  // JSX
+  // ================================
 
   return (
     <div className="bg-surface min-h-screen pb-24">
@@ -257,154 +360,195 @@ export function EstoquePage() {
           <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-linear-to-l to-transparent" />
         </div>
 
+        {/* CARREGANDO INICIAL */}
+        {carregandoProdutos && (
+          <p className="py-6 text-center text-sm text-slate-400">
+            Carregando produtos...
+          </p>
+        )}
+
         {/* PRODUTOS */}
-        <ul className="space-y-3">
-          {produtosFiltrados.map((p) => {
-            const badge = statusBadge(p);
+        {!carregandoProdutos && (
+          <>
+            <ul className="space-y-3">
+              {produtosFiltrados.map((p) => {
+                const badge = statusBadge(p);
 
-            const categoriaNome =
-              categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
+                const categoriaNome =
+                  categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
 
-            const dias = diasParaVencer(p.dataValidade);
+                const dias = diasParaVencer(p.dataValidade);
 
-            const alertaValidade =
-              precisaAlertarValidade(p.dataValidade) && p.quantidadeAtual > 0;
+                const alertaValidade =
+                  precisaAlertarValidade(p.dataValidade) &&
+                  p.quantidadeAtual > 0;
 
-            const corThumb = alertaValidade
-              ? "var(--color-danger-600)"
-              : p.quantidadeAtual <= 0
-                ? "var(--color-danger-600)"
-                : p.quantidadeAtual < p.quantidadeMinima
-                  ? "var(--color-warn-600)"
-                  : "var(--color-success-600)";
+                const corThumb = alertaValidade
+                  ? "var(--color-danger-600)"
+                  : p.quantidadeAtual <= 0
+                    ? "var(--color-danger-600)"
+                    : p.quantidadeAtual < p.quantidadeMinima
+                      ? "var(--color-warn-600)"
+                      : "var(--color-success-600)";
 
-            const corPreenchida = alertaValidade
-              ? "#F43F5E"
-              : p.quantidadeAtual <= 0
-                ? "#F43F5E"
-                : p.quantidadeAtual < p.quantidadeMinima
-                  ? "#F59E0B"
-                  : "#22C55E";
+                const corPreenchida = alertaValidade
+                  ? "#F43F5E"
+                  : p.quantidadeAtual <= 0
+                    ? "#F43F5E"
+                    : p.quantidadeAtual < p.quantidadeMinima
+                      ? "#F59E0B"
+                      : "#22C55E";
 
-            const percentual = Math.min(
-              100,
-              (p.quantidadeAtual / p.quantidadeIdeal) * 100,
-            );
+                const percentual = Math.min(
+                  100,
+                  (p.quantidadeAtual / p.quantidadeIdeal) * 100,
+                );
 
-            return (
-              <li
-                key={p.id}
-                className="rounded-2xl border border-slate-100 bg-white p-4"
-              >
-                {/* CABEÇALHO DO PRODUTO */}
-                <div className="mb-1 flex items-start justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      {p.nome}
-                    </p>
+                return (
+                  <li
+                    key={p.id}
+                    className="rounded-2xl border border-slate-100 bg-white p-4"
+                  >
+                    {/* CABEÇALHO */}
+                    <div className="mb-1 flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">
+                          {p.nome}
+                        </p>
 
-                    <p className="text-[11px] text-slate-400">
-                      {categoriaNome}
+                        <p className="text-[11px] text-slate-400">
+                          {categoriaNome}
 
-                      {dias !== null && (
-                        <span
-                          className={
-                            alertaValidade ? "text-danger-600 font-medium" : ""
-                          }
+                          {dias !== null && (
+                            <span
+                              className={
+                                alertaValidade
+                                  ? "text-danger-600 font-medium"
+                                  : ""
+                              }
+                            >
+                              {" · vence em "}
+                              {dias < 0 ? "vencido" : `${dias} dias`}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {badge && (
+                          <span
+                            className={`rounded-full px-2 py-1 text-[10px] font-bold ${badge.classe}`}
+                          >
+                            {badge.texto}
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => abrirEdicao(p)}
+                          title="Editar produto"
+                          className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200"
                         >
-                          {" · vence em "}
-                          {dias < 0 ? "vencido" : `${dias} dias`}
+                          <Edit size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* SLIDER */}
+                    <input
+                      type="range"
+                      min={0}
+                      max={Math.max(p.quantidadeIdeal, p.quantidadeAtual)}
+                      step={1}
+                      value={p.quantidadeAtual}
+                      className="stock-slider my-3"
+                      style={{
+                        ["--thumb-color" as any]: corThumb,
+
+                        background: `linear-gradient(to right, ${corPreenchida} ${percentual}%, #E2E8F0 ${percentual}%)`,
+                      }}
+                      onInput={(e) =>
+                        atualizarLocalmenteDuranteArraste(
+                          p.id,
+                          Number(e.currentTarget.value),
+                        )
+                      }
+                      onMouseUp={(e) =>
+                        ajustarPorSlider(p, Number(e.currentTarget.value))
+                      }
+                      onTouchEnd={(e) =>
+                        ajustarPorSlider(p, Number(e.currentTarget.value))
+                      }
+                    />
+
+                    {/* QUANTIDADE */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-sm">
+                        <span className="font-bold">{p.quantidadeAtual}</span>
+
+                        <span className="text-slate-400">
+                          {" "}
+                          {p.unidade} · min {p.quantidadeMinima}
                         </span>
-                      )}
-                    </p>
-                  </div>
+                      </p>
 
-                  <div className="flex items-center gap-2">
-                    {badge && (
-                      <span
-                        className={`rounded-full px-2 py-1 text-[10px] font-bold ${badge.classe}`}
-                      >
-                        {badge.texto}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
+                          disabled={p.quantidadeAtual <= 0}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Minus size={14} />
+                        </button>
+
+                        <button
+                          onClick={() => ajustarQuantidade(p, STEP_PADRAO)}
+                          className="bg-brand-600 hover:bg-brand-700 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* ERRO */}
+                    {erroPorProduto[p.id] && (
+                      <p className="text-danger-600 mt-2 text-[11px]">
+                        {erroPorProduto[p.id]}
+                      </p>
                     )}
+                  </li>
+                );
+              })}
+            </ul>
 
-                    {/* EDITAR */}
-                    <button
-                      type="button"
-                      onClick={() => abrirEdicao(p)}
-                      title="Editar produto"
-                      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200"
-                    >
-                      <Edit size={14} />
-                    </button>
-                  </div>
-                </div>
+            {/* NENHUM PRODUTO */}
+            {produtosFiltrados.length === 0 && (
+              <div className="py-10 text-center">
+                <p className="text-sm font-semibold text-slate-500">
+                  Nenhum produto encontrado
+                </p>
 
-                {/* SLIDER */}
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(p.quantidadeIdeal, p.quantidadeAtual)}
-                  step={1}
-                  value={p.quantidadeAtual}
-                  className="stock-slider my-3"
-                  style={{
-                    ["--thumb-color" as any]: corThumb,
-                    background: `linear-gradient(to right, ${corPreenchida} ${percentual}%, #E2E8F0 ${percentual}%)`,
-                  }}
-                  onInput={(e) =>
-                    atualizarLocalmenteDurranteArraste(
-                      p.id,
-                      Number(e.currentTarget.value),
-                    )
-                  }
-                  onMouseUp={(e) =>
-                    ajustarPorSlider(p, Number(e.currentTarget.value))
-                  }
-                  onTouchEnd={(e) =>
-                    ajustarPorSlider(p, Number(e.currentTarget.value))
-                  }
-                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Tente outra busca ou categoria.
+                </p>
+              </div>
+            )}
 
-                {/* QUANTIDADE */}
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-sm">
-                    <span className="font-bold">{p.quantidadeAtual}</span>
-
-                    <span className="text-slate-400">
-                      {" "}
-                      {p.unidade} · min {p.quantidadeMinima}
-                    </span>
-                  </p>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
-                      disabled={p.quantidadeAtual <= 0}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Minus size={14} />
-                    </button>
-
-                    <button
-                      onClick={() => ajustarQuantidade(p, STEP_PADRAO)}
-                      className="bg-brand-600 hover:bg-brand-700 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* ERRO */}
-                {erroPorProduto[p.id] && (
-                  <p className="text-danger-600 mt-2 text-[11px]">
-                    {erroPorProduto[p.id]}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+            {/* CARREGAR MAIS */}
+            {temMaisProdutos && !busca && categoriaAtiva === "todos" && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={carregarMais}
+                  disabled={carregandoMais}
+                  className="bg-brand-600 hover:bg-brand-700 cursor-pointer rounded-xl px-5 py-2.5 text-xs font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {carregandoMais ? "Carregando..." : "Carregar mais"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* MODAL DE EDIÇÃO */}
