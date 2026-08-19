@@ -1,47 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { produtoService } from "../api/produtoService";
 import { categoriaService } from "../api/categoriaService";
-import type { ProdutoDTO } from "../types/produto";
 import type { CategoriaDTO } from "../types/categoria";
 
 interface AdicionarItemModalProps {
-  produtosJaNaLista: number[];
   onConfirmar: (produtoId: number) => Promise<void>;
   onFechar: () => void;
 }
 
-type Aba = "existente" | "novo";
-
 export function AdicionarItemModal({
-  produtosJaNaLista,
   onConfirmar,
   onFechar,
 }: AdicionarItemModalProps) {
-  const [aba, setAba] = useState<Aba>("existente");
-  const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
   const [carregandoCategorias, setCarregandoCategorias] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // aba "existente"
-  const [categoriaFiltro, setCategoriaFiltro] = useState<number | "">("");
-  const [produtoId, setProdutoId] = useState<number | "">("");
-
-  // aba "novo"
   const [nome, setNome] = useState("");
-  const [categoriaNovo, setCategoriaNovo] = useState<number | "">("");
+  const [categoriaId, setCategoriaId] = useState<number | "">("");
   const [quantidade, setQuantidade] = useState("");
   const [estoqueMinimo, setEstoqueMinimo] = useState("");
   const [dataValidade, setDataValidade] = useState("");
-  const [buscaProduto, setBuscaProduto] = useState("");
-  const [sugestoesAbertas, setSugestoesAbertas] = useState(false);
 
   useEffect(() => {
-    produtoService
-      .listar({ size: 200 })
-      .then((r) => setProdutos(r.data.content));
     carregarCategorias();
   }, []);
 
@@ -70,34 +53,8 @@ export function AdicionarItemModal({
     }
   }
 
-  const produtosDisponiveis = useMemo(() => {
-    return produtos.filter(
-      (p) =>
-        (categoriaFiltro === "" || p.categoriaId === categoriaFiltro) &&
-        !produtosJaNaLista.includes(p.id) &&
-        p.nome.toLowerCase().includes(buscaProduto.toLowerCase()),
-    );
-  }, [produtos, categoriaFiltro, produtosJaNaLista, buscaProduto]);
-
-  async function confirmarExistente() {
-    if (!produtoId) {
-      setErro("Selecione um produto.");
-      return;
-    }
-    setEnviando(true);
-    setErro(null);
-    try {
-      await onConfirmar(produtoId);
-      onFechar();
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível adicionar o item.");
-    } finally {
-      setEnviando(false);
-    }
-  }
-
-  async function confirmarNovo() {
-    if (!nome.trim() || !categoriaNovo || !estoqueMinimo) {
+  async function confirmar() {
+    if (!nome.trim() || !categoriaId || !estoqueMinimo) {
       setErro("Preencha nome, categoria e estoque mínimo.");
       return;
     }
@@ -106,7 +63,7 @@ export function AdicionarItemModal({
     try {
       const res = await produtoService.criarRapido({
         nome: nome.trim(),
-        categoriaId: categoriaNovo,
+        categoriaId,
         quantidadeAtual: Number(quantidade) || 0,
         quantidadeMinima: Number(estoqueMinimo),
         dataValidade: dataValidade || undefined,
@@ -130,37 +87,12 @@ export function AdicionarItemModal({
         className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 sm:rounded-3xl sm:pb-5"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-bold text-slate-800">
-            {aba === "existente" ? "Adicionar item" : "Novo produto"}
-          </h3>
+          <h3 className="text-base font-bold text-slate-800">Adicionar item</h3>
           <button
             onClick={onFechar}
             className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200"
           >
             <X size={14} />
-          </button>
-        </div>
-
-        <div className="mb-4 flex gap-2 rounded-xl bg-slate-100 p-1">
-          <button
-            onClick={() => setAba("existente")}
-            className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors ${
-              aba === "existente"
-                ? "text-brand-600 bg-white shadow-sm"
-                : "text-slate-500"
-            }`}
-          >
-            Produto existente
-          </button>
-          <button
-            onClick={() => setAba("novo")}
-            className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors ${
-              aba === "novo"
-                ? "text-brand-600 bg-white shadow-sm"
-                : "text-slate-500"
-            }`}
-          >
-            Criar novo
           </button>
         </div>
 
@@ -173,9 +105,6 @@ export function AdicionarItemModal({
         {carregandoCategorias ? (
           <p className="py-6 text-center text-sm text-slate-400">Carregando…</p>
         ) : categorias.length === 0 ? (
-          // Estado vazio: usuário ainda não tem nenhuma categoria — sem isso,
-          // nem o select nem os pills de categoria têm o que mostrar,
-          // e o usuário fica travado sem conseguir adicionar nada.
           <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center">
             <p className="text-sm font-semibold text-slate-500">
               Nenhuma categoria cadastrada
@@ -191,22 +120,18 @@ export function AdicionarItemModal({
               {enviando ? "Criando…" : "Criar categorias padrão"}
             </button>
           </div>
-        ) : aba === "existente" ? (
+        ) : (
           <>
             <label className="mb-3 block text-sm font-medium text-slate-700">
               Categoria
               <select
-                value={categoriaFiltro}
-                onChange={(e) => {
-                  setCategoriaFiltro(
-                    e.target.value ? Number(e.target.value) : "",
-                  );
-                  setProdutoId("");
-                  setBuscaProduto("");
-                }}
+                value={categoriaId}
+                onChange={(e) =>
+                  setCategoriaId(e.target.value ? Number(e.target.value) : "")
+                }
                 className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
               >
-                <option value="">Todas as categorias</option>
+                <option value="">Selecione a categoria</option>
                 {categorias.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nome}
@@ -215,118 +140,50 @@ export function AdicionarItemModal({
               </select>
             </label>
 
-            <div className="relative mb-5">
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Produto
-              </label>
+            <label className="mb-3 block text-sm font-medium text-slate-700">
+              Produto
               <input
-                value={buscaProduto}
-                onChange={(e) => {
-                  setBuscaProduto(e.target.value);
-                  setProdutoId(""); // desfaz seleção anterior enquanto o usuário digita
-                  setSugestoesAbertas(true);
-                }}
-                onFocus={() => setSugestoesAbertas(true)}
-                onBlur={() => setTimeout(() => setSugestoesAbertas(false), 150)} // delay pra permitir o clique na sugestão
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 placeholder="Digite o nome do produto"
-                className="focus:ring-brand-500/30 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
+                className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
               />
-
-              {sugestoesAbertas && buscaProduto && (
-                <div className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-                  {produtosDisponiveis.length === 0 ? (
-                    <p className="px-3 py-2.5 text-xs text-slate-400">
-                      Nenhum produto encontrado
-                    </p>
-                  ) : (
-                    produtosDisponiveis.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => {
-                          setProdutoId(p.id);
-                          setBuscaProduto(p.nome);
-                          setSugestoesAbertas(false);
-                        }}
-                        className="block w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50"
-                      >
-                        {p.nome}
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={onFechar}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarExistente}
-                disabled={enviando || !produtoId}
-                className="bg-brand-600 hover:bg-brand-700 flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
-              >
-                {enviando ? "Adicionando…" : "Confirmar"}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <input
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Nome do produto"
-              className="focus:ring-brand-500/30 mb-3 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
-            />
+            </label>
 
             <div className="mb-3 grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                min={0}
-                value={quantidade}
-                onChange={(e) => setQuantidade(e.target.value)}
-                placeholder="Quantidade"
-                className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
-              />
-              <input
-                type="number"
-                min={0}
-                value={estoqueMinimo}
-                onChange={(e) => setEstoqueMinimo(e.target.value)}
-                placeholder="Estoque mínimo"
-                className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
-              />
+              <label className="block text-xs font-medium text-slate-500">
+                Quantidade
+                <input
+                  type="number"
+                  min={0}
+                  value={quantidade}
+                  onChange={(e) => setQuantidade(e.target.value)}
+                  placeholder="0"
+                  className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
+                />
+              </label>
+              <label className="block text-xs font-medium text-slate-500">
+                Estoque mínimo
+                <input
+                  type="number"
+                  min={0}
+                  value={estoqueMinimo}
+                  onChange={(e) => setEstoqueMinimo(e.target.value)}
+                  placeholder="0"
+                  className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
+                />
+              </label>
             </div>
 
-            <label className="mb-3 block text-xs font-medium text-slate-500">
+            <label className="mb-5 block text-xs font-medium text-slate-500">
               Data de validade (opcional)
               <input
                 type="date"
                 value={dataValidade}
                 onChange={(e) => setDataValidade(e.target.value)}
-                className="focus:ring-brand-500/30 mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:ring-2 focus:outline-none"
+                className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:ring-2 focus:outline-none"
               />
             </label>
-
-            <div className="scroll-thin mb-5 flex gap-2 overflow-x-auto pb-1">
-              {categorias.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setCategoriaNovo(c.id)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    categoriaNovo === c.id
-                      ? "bg-brand-600 text-white"
-                      : "border border-slate-200 bg-white text-slate-500"
-                  }`}
-                >
-                  {c.nome}
-                </button>
-              ))}
-            </div>
 
             <div className="flex gap-3">
               <button
@@ -336,11 +193,11 @@ export function AdicionarItemModal({
                 Cancelar
               </button>
               <button
-                onClick={confirmarNovo}
+                onClick={confirmar}
                 disabled={enviando}
                 className="bg-brand-600 hover:bg-brand-700 flex-1 rounded-xl py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
               >
-                {enviando ? "Criando…" : "Confirmar"}
+                {enviando ? "Adicionando…" : "Confirmar"}
               </button>
             </div>
           </>

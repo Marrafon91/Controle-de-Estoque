@@ -8,7 +8,6 @@ import https.github.com.fernandesdennys.dispensa.dtos.ProdutoUpdateDTO;
 import https.github.com.fernandesdennys.dispensa.entities.Categoria;
 import https.github.com.fernandesdennys.dispensa.entities.Produto;
 import https.github.com.fernandesdennys.dispensa.entities.Usuario;
-import https.github.com.fernandesdennys.dispensa.entities.enums.Unidade;
 import https.github.com.fernandesdennys.dispensa.exception.DatabaseException;
 import https.github.com.fernandesdennys.dispensa.exception.ResourceNotFoundException;
 import https.github.com.fernandesdennys.dispensa.repositories.CategoriaRepository;
@@ -71,22 +70,21 @@ public class ProdutoService {
     public ProdutoDTO criarRapido(ProdutoQuickInsertDTO dto) {
         try {
             Usuario usuario = usuarioLogadoService.getUsuarioLogado();
-            Categoria categoria = categoriaRepository.buscarPorId(dto.categoriaId(), usuario.getId())
+
+            Categoria categoria = categoriaRepository
+                    .buscarPorId(dto.categoriaId(), usuario.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: id " + dto.categoriaId()));
 
-            Produto produto = new Produto();
-            produto.setNome(dto.nome());
+            Produto produto = produtoMapper.toEntity(dto);
+
             produto.setCategoria(categoria);
-            produto.setUnidade(Unidade.UN);
-            produto.setQuantidadeAtual(dto.quantidadeAtual());
-            produto.setQuantidadeMinima(dto.quantidadeMinima());
-            produto.setQuantidadeIdeal(dto.quantidadeMinima().multiply(BigDecimal.valueOf(2)));
-            produto.setAtivo(true);
             produto.setUsuario(usuario);
-            produto.setDataValidade(dto.dataValidade());
+
+            produto.setQuantidadeIdeal(dto.quantidadeMinima().multiply(BigDecimal.valueOf(2)));
 
             produto = produtoRepository.save(produto);
             return produtoMapper.toDTO(produto);
+
         } catch (DataIntegrityViolationException e) {
             throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
         }

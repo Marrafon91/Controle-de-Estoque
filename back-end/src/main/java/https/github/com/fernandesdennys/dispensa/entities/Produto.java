@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "tb_produto", uniqueConstraints = {@UniqueConstraint(name = "uk_produto_nome", columnNames = "nome")})
+@Table(name = "tb_produto", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_produto_nome_usuario", columnNames = {"nome", "usuario_id"})}
+)
 @EntityListeners(AuditingEntityListener.class)
 public class Produto {
 
@@ -22,7 +24,7 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, length = 120, unique = true)
+    @Column(nullable = false, length = 120)
     private String nome;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
