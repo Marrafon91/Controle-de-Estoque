@@ -101,7 +101,7 @@ export function ListaComprasPage() {
 
           <button
             onClick={() => setModalAberto(true)}
-            className="bg-brand-600 shadow-brand-600/20 hover:bg-brand-700 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-95 cursor-pointer"
+            className="bg-brand-600 shadow-brand-600/20 hover:bg-brand-700 flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
           >
             <Plus size={17} strokeWidth={2.5} />
             <span>Adicionar</span>
@@ -220,7 +220,6 @@ export function ListaComprasPage() {
 
       {modalAberto && (
         <AdicionarItemModal
-          produtosJaNaLista={lista.itens.map((i) => i.produtoId)}
           onConfirmar={adicionarItem}
           onFechar={() => setModalAberto(false)}
         />

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import type { ApiError } from "../../types/error";
+import { UserRoundPlus } from "lucide-react";
 
 export function RegistroPage() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function RegistroPage() {
     <div className="bg-surface flex min-h-screen flex-col justify-center px-6 pb-24">
       <div className="mb-8 text-center">
         <div className="bg-brand-600 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl text-sm font-bold text-white">
-          DNS
+          <UserRoundPlus size={22} />
         </div>
         <h1 className="text-xl font-bold text-slate-800">Criar conta</h1>
         <p className="text-xs text-slate-400">Comece a controlar seu estoque</p>
@@ -45,7 +46,10 @@ export function RegistroPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto w-full max-w-md space-y-3"
+      >
         <input
           required
           value={nome}
@@ -53,6 +57,7 @@ export function RegistroPage() {
           placeholder="Nome"
           className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
         />
+
         <input
           type="email"
           required
@@ -61,6 +66,7 @@ export function RegistroPage() {
           placeholder="E-mail"
           className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
         />
+
         <input
           type="password"
           required
