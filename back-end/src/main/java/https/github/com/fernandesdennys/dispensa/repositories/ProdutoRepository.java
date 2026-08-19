@@ -28,6 +28,7 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
                 FROM Produto p
                 JOIN FETCH p.categoria c
                 WHERE p.ativo = true
+                AND p.usuario.id = :usuarioId
                 AND (:categoriaId IS NULL OR c.id = :categoriaId)
                 AND (:abaixoMinimo = false OR p.quantidadeAtual < p.quantidadeMinima)
                 AND (:busca IS NULL OR LOWER(p.nome) LIKE LOWER(CONCAT('%', :busca, '%')))
@@ -40,8 +41,9 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
                     p.nome ASC
             """)
     Page<Produto> buscarProdutos(
+            @Param("usuarioId") Integer usuarioId,
             @Param("categoriaId") Integer categoriaId,
-            Integer id, @Param("abaixoMinimo") Boolean abaixoMinimo,
+            @Param("abaixoMinimo") Boolean abaixoMinimo,
             @Param("busca") String busca,
             @Param("ordenarPor") String ordenarPor,
             Pageable pageable
@@ -80,10 +82,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     @Modifying
     @Transactional
     @Query("""
-            UPDATE Produto p
-            SET p.quantidadeAtual = :quantidadeAtual, p.atualizadoEm = :atualizadoEm
-            WHERE p.id = :id AND p.ativo = true
-        """)
+                UPDATE Produto p
+                SET p.quantidadeAtual = :quantidadeAtual, p.atualizadoEm = :atualizadoEm
+                WHERE p.id = :id AND p.ativo = true
+            """)
     int atualizarQuantidade(@Param("id") Integer id, @Param("quantidadeAtual") BigDecimal quantidadeAtual, @Param("atualizadoEm") LocalDateTime atualizadoEm);
 
     // DELETE /produtos/{id} — soft delete

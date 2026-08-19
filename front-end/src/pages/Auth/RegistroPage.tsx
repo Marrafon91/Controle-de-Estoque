@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import type { ApiError } from "../../types/error";
 
 export function RegistroPage() {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ export function RegistroPage() {
     try {
       await registrar({ nome, email, senha });
       navigate("/");
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível criar a conta.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível criar a conta.");
     }
   }
 

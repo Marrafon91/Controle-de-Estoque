@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import type { ApiError } from "../../types/error";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -15,8 +16,9 @@ export function LoginPage() {
     try {
       await login({ email, senha });
       navigate("/");
-    } catch (err: any) {
-      setErro(err.mensagem ?? "E-mail ou senha inválidos.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "E-mail ou senha inválidos.");
     }
   }
 

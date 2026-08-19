@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { produtoService } from "../api/produtoService";
 import { categoriaService } from "../api/categoriaService";
 import type { CategoriaDTO } from "../types/categoria";
+import type { ApiError } from "../types/error";
 
 interface AdicionarItemModalProps {
   onConfirmar: (produtoId: number) => Promise<void>;
@@ -33,8 +34,9 @@ export function AdicionarItemModal({
     try {
       const res = await categoriaService.listar();
       setCategorias(res.data);
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível carregar as categorias.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível carregar as categorias.");
     } finally {
       setCarregandoCategorias(false);
     }
@@ -46,8 +48,9 @@ export function AdicionarItemModal({
     try {
       await categoriaService.semearPadrao();
       await carregarCategorias();
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível criar as categorias.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível criar as categorias.");
     } finally {
       setEnviando(false);
     }
@@ -70,8 +73,9 @@ export function AdicionarItemModal({
       });
       await onConfirmar(res.data.id);
       onFechar();
-    } catch (err: any) {
-      setErro(err.mensagem ?? "Não foi possível criar o produto.");
+    } catch (err) {
+      const erro = err as ApiError;
+      setErro(erro.mensagem ?? "Não foi possível criar o produto.");
     } finally {
       setEnviando(false);
     }
