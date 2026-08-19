@@ -18,11 +18,28 @@ import java.util.Optional;
 
 public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
 
-    // GET /produtos/{id}
-    @Query("SELECT p FROM Produto p JOIN FETCH p.categoria WHERE p.id = :id AND p.usuario.id = :usuarioId AND p.ativo = true")
-    Optional<Produto> buscarPorId(@Param("id") Integer id, @Param("usuarioId") Integer usuarioId);
+    // =========================================================
+    // BUSCAR POR ID
+    // =========================================================
 
-    // GET /produtos (listagem com filtro/ordenação/paginação)
+    @Query("""
+                SELECT p
+                FROM Produto p
+                JOIN FETCH p.categoria
+                WHERE p.id = :id
+                AND p.usuario.id = :usuarioId
+                AND p.ativo = true
+            """)
+    Optional<Produto> buscarPorId(
+            @Param("id") Integer id,
+            @Param("usuarioId") Integer usuarioId
+    );
+
+
+    // =========================================================
+    // LISTAR PRODUTOS
+    // =========================================================
+
     @Query("""
                 SELECT p
                 FROM Produto p
@@ -49,22 +66,26 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             Pageable pageable
     );
 
-    // PUT /produtos/{id} — atualiza cadastro completo
+
+    // =========================================================
+    // ATUALIZAR PRODUTO
+    // =========================================================
+
     @Modifying
     @Transactional
     @Query("""
-    UPDATE Produto p
-    SET p.nome = :nome,
-        p.categoria = :categoria,
-        p.unidade = :unidade,
-        p.quantidadeAtual = :quantidadeAtual,
-        p.quantidadeMinima = :quantidadeMinima,
-        p.quantidadeIdeal = :quantidadeIdeal,
-        p.atualizadoEm = :atualizadoEm
-    WHERE p.id = :id
-      AND p.usuario.id = :usuarioId
-      AND p.ativo = true
-""")
+                UPDATE Produto p
+                SET p.nome = :nome,
+                    p.categoria = :categoria,
+                    p.unidade = :unidade,
+                    p.quantidadeAtual = :quantidadeAtual,
+                    p.quantidadeMinima = :quantidadeMinima,
+                    p.quantidadeIdeal = :quantidadeIdeal,
+                    p.atualizadoEm = :atualizadoEm
+                WHERE p.id = :id
+                AND p.usuario.id = :usuarioId
+                AND p.ativo = true
+            """)
     int atualizarProduto(
             @Param("id") Integer id,
             @Param("usuarioId") Integer usuarioId,
@@ -77,20 +98,37 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             @Param("atualizadoEm") LocalDateTime atualizadoEm
     );
 
-    @Query("SELECT p FROM Produto p WHERE p.ativo = true AND p.usuario.id = :usuarioId AND p.quantidadeAtual < p.quantidadeMinima")
-    List<Produto> buscarProdutosAbaixoDoMinimo(@Param("usuarioId") Integer usuarioId);
 
-    // POST /produtos/{id}/entrada|consumo|descarte|ajuste — atualiza SÓ a quantidade
+    // =========================================================
+    // PRODUTOS ABAIXO DO MÍNIMO
+    // =========================================================
+
+    @Query("""
+                SELECT p
+                FROM Produto p
+                WHERE p.ativo = true
+                AND p.usuario.id = :usuarioId
+                AND p.quantidadeAtual < p.quantidadeMinima
+            """)
+    List<Produto> buscarProdutosAbaixoDoMinimo(
+            @Param("usuarioId") Integer usuarioId
+    );
+
+
+    // =========================================================
+    // ATUALIZAR QUANTIDADE
+    // =========================================================
+
     @Modifying
     @Transactional
     @Query("""
-    UPDATE Produto p
-    SET p.quantidadeAtual = :quantidadeAtual,
-        p.atualizadoEm = :atualizadoEm
-    WHERE p.id = :id
-      AND p.usuario.id = :usuarioId
-      AND p.ativo = true
-""")
+                UPDATE Produto p
+                SET p.quantidadeAtual = :quantidadeAtual,
+                    p.atualizadoEm = :atualizadoEm
+                WHERE p.id = :id
+                AND p.usuario.id = :usuarioId
+                AND p.ativo = true
+            """)
     int atualizarQuantidade(
             @Param("id") Integer id,
             @Param("usuarioId") Integer usuarioId,
@@ -98,20 +136,36 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
             @Param("atualizadoEm") LocalDateTime atualizadoEm
     );
 
-    // DELETE /produtos/{id} — soft delete
+
+    // =========================================================
+    // SOFT DELETE
+    // =========================================================
+
     @Modifying
     @Transactional
     @Query("""
-    UPDATE Produto p
-    SET p.ativo = false,
-        p.atualizadoEm = :atualizadoEm
-    WHERE p.id = :id
-      AND p.usuario.id = :usuarioId
-      AND p.ativo = true
-""")
+                UPDATE Produto p
+                SET p.ativo = false,
+                    p.atualizadoEm = :atualizadoEm
+                WHERE p.id = :id
+                AND p.usuario.id = :usuarioId
+                AND p.ativo = true
+            """)
     int softDelete(
             @Param("id") Integer id,
             @Param("usuarioId") Integer usuarioId,
             @Param("atualizadoEm") LocalDateTime atualizadoEm
+    );
+
+    @Query("""
+                SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
+                FROM Produto p
+                WHERE p.nome = :nome
+                  AND p.usuario.id = :usuarioId
+                  AND p.ativo = true
+            """)
+    boolean existeProdutoAtivo(
+            @Param("nome") String nome,
+            @Param("usuarioId") Integer usuarioId
     );
 }

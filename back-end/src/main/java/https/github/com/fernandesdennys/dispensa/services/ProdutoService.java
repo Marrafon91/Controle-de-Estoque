@@ -68,39 +68,55 @@ public class ProdutoService {
 
     @Transactional
     public ProdutoDTO criarRapido(ProdutoQuickInsertDTO dto) {
-        try {
-            Usuario usuario = usuarioLogadoService.getUsuarioLogado();
 
-            Categoria categoria = categoriaRepository
-                    .buscarPorId(dto.categoriaId(), usuario.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: id " + dto.categoriaId()));
+        Usuario usuario = usuarioLogadoService.getUsuarioLogado();
 
-            Produto produto = produtoMapper.toEntity(dto);
-
-            produto.setCategoria(categoria);
-            produto.setUsuario(usuario);
-
-            produto.setQuantidadeIdeal(dto.quantidadeMinima().multiply(BigDecimal.valueOf(2)));
-
-            produto = produtoRepository.save(produto);
-            return produtoMapper.toDTO(produto);
-
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
+        if (produtoRepository.existeProdutoAtivo(dto.nome(), usuario.getId())) {
+            throw new DatabaseException(
+                    "Já existe um produto ativo com o nome " + dto.nome()
+            );
         }
+
+        Categoria categoria = categoriaRepository
+                .buscarPorId(dto.categoriaId(), usuario.getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Categoria não encontrada: id " + dto.categoriaId()
+                        )
+                );
+
+        Produto produto = produtoMapper.toEntity(dto);
+
+        produto.setCategoria(categoria);
+        produto.setUsuario(usuario);
+
+        produto.setQuantidadeIdeal(
+                dto.quantidadeMinima().multiply(BigDecimal.valueOf(2))
+        );
+
+        produto = produtoRepository.save(produto);
+
+        return produtoMapper.toDTO(produto);
     }
 
     @Transactional
     public ProdutoDTO inserir(ProdutoInsertDTO dto) {
-        try {
-            Usuario usuario = usuarioLogadoService.getUsuarioLogado();
-            Produto entity = produtoMapper.toEntity(dto);
-            entity.setUsuario(usuario);
-            entity = produtoRepository.save(entity);
-            return produtoMapper.toDTO(entity);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Já existe um produto cadastrado com o nome " + dto.nome());
+
+        Usuario usuario = usuarioLogadoService.getUsuarioLogado();
+
+        if (produtoRepository.existeProdutoAtivo(dto.nome(), usuario.getId())) {
+            throw new DatabaseException(
+                    "Já existe um produto ativo com o nome " + dto.nome()
+            );
         }
+
+        Produto entity = produtoMapper.toEntity(dto);
+
+        entity.setUsuario(usuario);
+
+        entity = produtoRepository.save(entity);
+
+        return produtoMapper.toDTO(entity);
     }
 
     @Transactional
@@ -121,11 +137,19 @@ public class ProdutoService {
 
     @Transactional
     public void delete(Integer id) {
+
         Integer usuarioId = usuarioLogadoService.getUsuarioIdLogado();
-        int result = produtoRepository.softDelete(id, usuarioId, LocalDateTime.now());
+
+        int result = produtoRepository.softDelete(
+                id,
+                usuarioId,
+                LocalDateTime.now()
+        );
 
         if (result == 0) {
-            throw new ResourceNotFoundException("Produto com ID " + id + " não encontrado");
+            throw new ResourceNotFoundException(
+                    "Produto não encontrado: id " + id
+            );
         }
     }
 }

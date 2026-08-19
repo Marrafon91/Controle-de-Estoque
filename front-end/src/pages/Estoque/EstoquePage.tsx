@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Edit, Minus, Plus, Search } from "lucide-react";
+import { Edit, Minus, Plus, Search, Trash2 } from "lucide-react";
 
 import { produtoService } from "../../api/produtoService";
 import { categoriaService } from "../../api/categoriaService";
@@ -7,6 +7,7 @@ import { movimentacaoService } from "../../api/movimentacaoService";
 
 import { AppHeader } from "../../components/AppHeader";
 import { EditarProdutoModal } from "../../components/EditarProdutoModal";
+import { ConfirmarExclusaoModal } from "../../components/ConfirmarExclusaoModal";
 
 import { diasParaVencer, precisaAlertarValidade } from "../../utils/validade";
 
@@ -31,9 +32,23 @@ export function EstoquePage() {
     {},
   );
 
+  // ================================
+  // MODAL DE EDIÇÃO
+  // ================================
+
   const [produtoEditando, setProdutoEditando] = useState<ProdutoDTO | null>(
     null,
   );
+
+  // ================================
+  // MODAL DE EXCLUSÃO
+  // ================================
+
+  const [produtoExcluindo, setProdutoExcluindo] = useState<ProdutoDTO | null>(
+    null,
+  );
+
+  const [excluindo, setExcluindo] = useState(false);
 
   // ================================
   // PAGINAÇÃO
@@ -74,10 +89,10 @@ export function EstoquePage() {
 
       setCategorias(categoriasResponse.data);
 
-      // Guarda o próximo offset
+      // Próximo offset
       setOffset(pagina.content.length);
 
-      // Se retornou menos de 10, não existe próxima página
+      // Se for a última página, não mostra "Carregar mais"
       setTemMaisProdutos(!pagina.last);
     } catch (err) {
       console.error(err);
@@ -105,15 +120,13 @@ export function EstoquePage() {
 
       const pagina = response.data;
 
-      // IMPORTANTE:
-      // concatena os novos produtos com os existentes
+      // Adiciona os novos produtos aos antigos
       setProdutos((prev) => [...prev, ...pagina.content]);
 
-      // Atualiza o offset para a próxima página
+      // Avança o offset
       setOffset((prev) => prev + pagina.content.length);
 
-      // Quando Spring disser que chegou na última página,
-      // escondemos o botão
+      // Se chegou na última página, esconde o botão
       setTemMaisProdutos(!pagina.last);
     } catch (err) {
       console.error(err);
@@ -188,7 +201,7 @@ export function EstoquePage() {
     } catch (err) {
       const erro = err as ApiError;
 
-      // Reverte
+      // Reverte alteração
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
@@ -278,6 +291,59 @@ export function EstoquePage() {
   }
 
   // ================================
+  // EXCLUSÃO
+  // ================================
+
+  function abrirExclusao(produto: ProdutoDTO) {
+    setProdutoExcluindo(produto);
+  }
+
+  function fecharExclusao() {
+    if (excluindo) {
+      return;
+    }
+
+    setProdutoExcluindo(null);
+  }
+
+  async function confirmarExclusao() {
+    if (!produtoExcluindo) {
+      return;
+    }
+
+    setExcluindo(true);
+
+    try {
+      await produtoService.deletar(produtoExcluindo.id);
+
+      // Remove da tela
+      setProdutos((prev) => prev.filter((p) => p.id !== produtoExcluindo.id));
+
+      // Remove possível erro antigo
+      setErroPorProduto((prev) => {
+        const novo = { ...prev };
+
+        delete novo[produtoExcluindo.id];
+
+        return novo;
+      });
+
+      // Fecha modal
+      setProdutoExcluindo(null);
+    } catch (err) {
+      const erro = err as ApiError;
+
+      setErroPorProduto((prev) => ({
+        ...prev,
+        [produtoExcluindo.id]:
+          erro.mensagem ?? "Não foi possível excluir o produto.",
+      }));
+    } finally {
+      setExcluindo(false);
+    }
+  }
+
+  // ================================
   // BADGE
   // ================================
 
@@ -324,6 +390,7 @@ export function EstoquePage() {
         <h2 className="mt-4 mb-3 font-bold text-slate-800">Estoque</h2>
 
         {/* BUSCA */}
+
         <div className="relative mb-3">
           <Search
             size={16}
@@ -339,6 +406,7 @@ export function EstoquePage() {
         </div>
 
         {/* FILTROS */}
+
         <div className="relative mb-4">
           <div className="scroll-thin flex gap-2 overflow-x-auto pb-2">
             <FiltroChip
@@ -360,7 +428,8 @@ export function EstoquePage() {
           <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-linear-to-l to-transparent" />
         </div>
 
-        {/* CARREGANDO INICIAL */}
+        {/* CARREGANDO */}
+
         {carregandoProdutos && (
           <p className="py-6 text-center text-sm text-slate-400">
             Carregando produtos...
@@ -368,6 +437,7 @@ export function EstoquePage() {
         )}
 
         {/* PRODUTOS */}
+
         {!carregandoProdutos && (
           <>
             <ul className="space-y-3">
@@ -410,6 +480,7 @@ export function EstoquePage() {
                     className="rounded-2xl border border-slate-100 bg-white p-4"
                   >
                     {/* CABEÇALHO */}
+
                     <div className="mb-1 flex items-start justify-between">
                       <div>
                         <p className="text-sm font-semibold text-slate-800">
@@ -435,6 +506,8 @@ export function EstoquePage() {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {/* BADGE */}
+
                         {badge && (
                           <span
                             className={`rounded-full px-2 py-1 text-[10px] font-bold ${badge.classe}`}
@@ -442,6 +515,8 @@ export function EstoquePage() {
                             {badge.texto}
                           </span>
                         )}
+
+                        {/* EDITAR */}
 
                         <button
                           type="button"
@@ -451,10 +526,22 @@ export function EstoquePage() {
                         >
                           <Edit size={14} />
                         </button>
+
+                        {/* EXCLUIR */}
+
+                        <button
+                          type="button"
+                          onClick={() => abrirExclusao(p)}
+                          title="Excluir produto"
+                          className="hover:bg-danger-100 hover:text-danger-600 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </div>
 
                     {/* SLIDER */}
+
                     <input
                       type="range"
                       min={0}
@@ -482,6 +569,7 @@ export function EstoquePage() {
                     />
 
                     {/* QUANTIDADE */}
+
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-sm">
                         <span className="font-bold">{p.quantidadeAtual}</span>
@@ -493,6 +581,8 @@ export function EstoquePage() {
                       </p>
 
                       <div className="flex items-center gap-2">
+                        {/* MENOS */}
+
                         <button
                           onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
                           disabled={p.quantidadeAtual <= 0}
@@ -500,6 +590,8 @@ export function EstoquePage() {
                         >
                           <Minus size={14} />
                         </button>
+
+                        {/* MAIS */}
 
                         <button
                           onClick={() => ajustarQuantidade(p, STEP_PADRAO)}
@@ -511,6 +603,7 @@ export function EstoquePage() {
                     </div>
 
                     {/* ERRO */}
+
                     {erroPorProduto[p.id] && (
                       <p className="text-danger-600 mt-2 text-[11px]">
                         {erroPorProduto[p.id]}
@@ -522,6 +615,7 @@ export function EstoquePage() {
             </ul>
 
             {/* NENHUM PRODUTO */}
+
             {produtosFiltrados.length === 0 && (
               <div className="py-10 text-center">
                 <p className="text-sm font-semibold text-slate-500">
@@ -535,6 +629,7 @@ export function EstoquePage() {
             )}
 
             {/* CARREGAR MAIS */}
+
             {temMaisProdutos && !busca && categoriaAtiva === "todos" && (
               <div className="mt-5 flex justify-center">
                 <button
@@ -551,7 +646,10 @@ export function EstoquePage() {
         )}
       </div>
 
-      {/* MODAL DE EDIÇÃO */}
+      {/* ================================
+          MODAL DE EDIÇÃO
+      ================================= */}
+
       {produtoEditando && (
         <EditarProdutoModal
           produto={produtoEditando}
@@ -560,9 +658,26 @@ export function EstoquePage() {
           onAtualizado={atualizarProdutoNaLista}
         />
       )}
+
+      {/* ================================
+          MODAL DE CONFIRMAÇÃO DE EXCLUSÃO
+      ================================= */}
+
+      {produtoExcluindo && (
+        <ConfirmarExclusaoModal
+          produto={produtoExcluindo}
+          onCancelar={fecharExclusao}
+          onConfirmar={confirmarExclusao}
+          carregando={excluindo}
+        />
+      )}
     </div>
   );
 }
+
+// ======================================================
+// FILTRO CHIP
+// ======================================================
 
 function FiltroChip({
   label,

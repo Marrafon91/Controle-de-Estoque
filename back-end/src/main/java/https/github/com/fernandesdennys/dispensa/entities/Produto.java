@@ -14,9 +14,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "tb_produto", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_produto_nome_usuario", columnNames = {"nome", "usuario_id"})}
-)
+@Table(name = "tb_produto")
 @EntityListeners(AuditingEntityListener.class)
 public class Produto {
 
