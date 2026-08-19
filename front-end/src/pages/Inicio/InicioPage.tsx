@@ -1,30 +1,56 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlusCircle, ClipboardList } from "lucide-react";
+
 import { produtoService } from "../../api/produtoService";
 import { categoriaService } from "../../api/categoriaService";
 import { AppHeader } from "../../components/AppHeader";
+
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
+
 import { diasParaVencer } from "../../utils/validade";
 import Button from "../../components/Button";
+import { useAuth } from "../../contexts/AuthContext";
 
 function badgeStatus(p: ProdutoDTO) {
   const dias = diasParaVencer(p.dataValidade);
 
   if (p.quantidadeAtual <= 0) {
-    return { texto: "ESGOTADO", classe: "bg-danger-100 text-danger-600" };
+    return {
+      texto: "ESGOTADO",
+      classe: "bg-danger-100 text-danger-600",
+    };
   }
+
   if (dias !== null && dias <= 7) {
     return {
       texto: dias <= 0 ? "VENCIDO" : `VENCE EM ${dias}D`,
       classe: "bg-danger-100 text-danger-600",
     };
   }
-  return { texto: "BAIXO", classe: "bg-warn-100 text-warn-600" };
+
+  return {
+    texto: "BAIXO",
+    classe: "bg-warn-100 text-warn-600",
+  };
+}
+
+function obterSaudacao() {
+  const horaAtual = new Date().getHours();
+
+  return (
+    [
+      { limite: 12, texto: "Bom dia" },
+      { limite: 18, texto: "Boa tarde" },
+      { limite: 24, texto: "Boa noite" },
+    ].find((periodo) => horaAtual < periodo.limite)?.texto ?? "Boa noite"
+  );
 }
 
 export function InicioPage() {
+  const { usuario } = useAuth();
+
   const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -48,10 +74,13 @@ export function InicioPage() {
   const precisamAtencao = produtos.filter(
     (p) => p.quantidadeAtual < p.quantidadeMinima,
   );
+
   const totalProdutos = produtos.length;
+
   const estoqueBaixo = produtos.filter(
     (p) => p.quantidadeAtual < p.quantidadeMinima && p.quantidadeAtual > 0,
   ).length;
+
   const esgotados = produtos.filter((p) => p.quantidadeAtual <= 0).length;
 
   return (
@@ -63,8 +92,21 @@ export function InicioPage() {
       />
 
       <div className="-mt-2 px-5">
-        <p className="mt-4 text-lg font-bold text-slate-800">Olá 👋</p>
-        <p className="mb-4 text-xs text-slate-400">
+        {/* SAUDAÇÃO */}
+        <div className="mt-4 mb-1">
+          <p className="text-lg font-bold tracking-tight text-slate-800">
+            <span className="mr-1">{obterSaudacao()}</span>
+
+            <span className="mr-1">👋</span>
+
+            <span className="bg-brand-50 text-brand-700 rounded-lg px-2 py-0.5 font-extrabold">
+              {usuario?.nome ?? "Usuário"}
+            </span>
+          </p>
+        </div>
+
+        {/* DATA */}
+        <p className="mb-4 text-xs font-medium text-slate-400">
           {new Date().toLocaleDateString("pt-BR", {
             weekday: "short",
             day: "2-digit",
@@ -87,6 +129,7 @@ export function InicioPage() {
                 <p className="text-sm font-semibold text-slate-700">
                   Precisa de atenção
                 </p>
+
                 <span className="bg-danger-100 text-danger-600 rounded-full px-2 py-0.5 text-[11px] font-bold">
                   {precisamAtencao.length} itens
                 </span>
@@ -96,6 +139,7 @@ export function InicioPage() {
                 {precisamAtencao.map((p) => {
                   const badge = badgeStatus(p);
                   const dias = diasParaVencer(p.dataValidade);
+
                   return (
                     <div
                       key={p.id}
@@ -104,17 +148,23 @@ export function InicioPage() {
                       <div className="bg-brand-100 text-brand-600 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold">
                         {p.nome.charAt(0)}
                       </div>
+
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-slate-800">
                           {p.nome}
                         </p>
+
                         <p className="truncate text-[11px] text-slate-400">
                           {categorias.find((c) => c.id === p.categoriaId)
                             ?.nome ?? ""}
+
                           {dias !== null &&
-                            ` · vence em ${dias < 0 ? "vencido" : `${dias} dias`}`}
+                            ` · vence em ${
+                              dias < 0 ? "vencido" : `${dias} dias`
+                            }`}
                         </p>
                       </div>
+
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.classe}`}
                       >
@@ -128,7 +178,7 @@ export function InicioPage() {
 
             <Link
               to="/compras"
-              className="bg-brand-50 text-brand-700 mb-6 block rounded-xl py-2.5 text-center text-sm font-semibold"
+              className="bg-brand-50 text-brand-700 hover:bg-brand-100 mb-6 block rounded-xl py-2.5 text-center text-sm font-semibold transition-colors"
             >
               Ver lista de compras
             </Link>
@@ -138,12 +188,14 @@ export function InicioPage() {
             <p className="text-sm font-semibold text-slate-500">
               Tudo em ordem
             </p>
+
             <p className="mt-1 text-xs text-slate-400">
               Nenhum produto abaixo do mínimo.
             </p>
           </div>
         )}
 
+        {/* AÇÕES */}
         <div className="mb-6 grid grid-cols-2 gap-3">
           <Button to="/estoque" variant="entrada">
             <PlusCircle size={22} />
@@ -166,6 +218,7 @@ export function InicioPage() {
           </Button>
         </div>
 
+        {/* CATEGORIAS */}
         <p className="mb-2 text-sm font-semibold text-slate-700">
           Por categoria
         </p>
@@ -182,6 +235,7 @@ export function InicioPage() {
                 <p className="truncate text-xs font-semibold text-slate-700">
                   {c.nome}
                 </p>
+
                 <p className="text-[11px] text-slate-400">{count} itens</p>
               </div>
             );
