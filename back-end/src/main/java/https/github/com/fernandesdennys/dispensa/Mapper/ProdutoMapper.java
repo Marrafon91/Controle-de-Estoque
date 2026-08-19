@@ -32,7 +32,6 @@ public interface ProdutoMapper {
     @Mapping(target = "categoria", ignore = true)
     @Mapping(target = "usuario", ignore = true)
     @Mapping(target = "quantidadeIdeal", ignore = true)
-    @Mapping(target = "unidade", constant = "UN")
     @Mapping(target = "ativo", constant = "true")
     Produto toEntity(ProdutoQuickInsertDTO dto);
 
@@ -51,6 +50,7 @@ public interface ProdutoMapper {
 
     @Mapping(target = "categoria", source = "categoriaId")
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuario", ignore = true)
     void updateEntity(
             ProdutoUpdateDTO dto,
             @MappingTarget Produto produto

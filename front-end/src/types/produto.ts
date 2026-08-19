@@ -9,7 +9,7 @@ export interface ProdutoDTO {
   quantidadeMinima: number;
   quantidadeIdeal: number;
   ativo: boolean;
-  dataValidade: string | null; // formato ISO "2026-08-20"
+  dataValidade: string | null;
 }
 
 export interface ProdutoInsertDTO {
@@ -24,9 +24,17 @@ export interface ProdutoInsertDTO {
 export interface ProdutoQuickInsertDTO {
   nome: string;
   categoriaId: number;
+  unidade: Unidade;
   quantidadeAtual: number;
   quantidadeMinima: number;
   dataValidade?: string;
 }
 
-export type ProdutoUpdateDTO = ProdutoInsertDTO;
+export interface ProdutoUpdateDTO {
+  nome: string;
+  categoriaId: number;
+  unidade: Unidade;
+  quantidadeMinima: number;
+  quantidadeIdeal: number;
+  dataValidade: string | null;
+}

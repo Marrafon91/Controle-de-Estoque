@@ -2,7 +2,7 @@
 -- USUARIO (usuário de teste fixo — senha: 123456)
 -- =========================================================
 
-INSERT INTO tb_usuario (id, nome, email, senha, criado_em) VALUES (1, 'Guilherme', 'teste@teste.com', '$2b$10$0f/mHpUMpo8ERCtvXXok4u9MzepBYmfrHWKBTeXNbR/XChpN1/6jO', CURRENT_TIMESTAMP);
+INSERT INTO tb_usuario (nome, email, senha, criado_em) VALUES ('Guilherme', 'teste@teste.com', '$2b$10$0f/mHpUMpo8ERCtvXXok4u9MzepBYmfrHWKBTeXNbR/XChpN1/6jO', CURRENT_TIMESTAMP);
 
 -- =========================================================
 -- CATEGORIA

@@ -41,7 +41,7 @@ export function RegistroPage() {
       </div>
 
       {erro && (
-        <div className="bg-danger-100 text-danger-600 mb-4 rounded-xl px-3 py-2 text-xs">
+        <div className="bg-danger-100 text-danger-600 mx-auto mb-4 w-full max-w-md space-y-3 rounded-xl px-3 py-2 text-xs">
           {erro}
         </div>
       )}
@@ -79,7 +79,7 @@ export function RegistroPage() {
         <button
           type="submit"
           disabled={carregando}
-          className="bg-brand-600 hover:bg-brand-700 w-full rounded-xl py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+          className="bg-brand-600 hover:bg-brand-700 w-full rounded-xl py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50 cursor-pointer"
         >
           {carregando ? "Criando conta…" : "Criar conta"}
         </button>

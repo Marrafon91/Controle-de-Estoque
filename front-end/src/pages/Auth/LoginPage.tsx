@@ -34,38 +34,39 @@ export function LoginPage() {
       </div>
 
       {erro && (
-        <div className="bg-danger-100 text-danger-600 mb-4 rounded-xl px-3 py-2 text-xs">
+        <div className="bg-danger-100 text-danger-600 mx-auto mb-4 w-full max-w-md space-y-3 rounded-xl px-3 py-2 text-xs">
           {erro}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="mx-auto w-full max-w-md space-y-3">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-mail"
-            className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
-          />
-          <input
-            type="password"
-            required
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            placeholder="Senha"
-            className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
-          />
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto w-full max-w-md space-y-3"
+      >
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-mail"
+          className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
+        />
+        <input
+          type="password"
+          required
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          placeholder="Senha"
+          className="focus:ring-brand-500/30 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:ring-2 focus:outline-none"
+        />
 
-          <button
-            type="submit"
-            disabled={carregando}
-            className="bg-brand-600 hover:bg-brand-700 w-full rounded-xl py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          >
-            {carregando ? "Entrando…" : "Entrar"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={carregando}
+          className="bg-brand-600 hover:bg-brand-700 w-full cursor-pointer rounded-xl py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+        >
+          {carregando ? "Entrando…" : "Entrar"}
+        </button>
       </form>
 
       <p className="mt-6 text-center text-xs text-slate-400">

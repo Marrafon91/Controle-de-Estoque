@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Minus, Plus, Search } from "lucide-react";
+import { Edit, Minus, Plus, Search } from "lucide-react";
 import { produtoService } from "../../api/produtoService";
 import { categoriaService } from "../../api/categoriaService";
 import { movimentacaoService } from "../../api/movimentacaoService";
 import { AppHeader } from "../../components/AppHeader";
+import { EditarProdutoModal } from "../../components/EditarProdutoModal";
 import { diasParaVencer, precisaAlertarValidade } from "../../utils/validade";
 import type { ProdutoDTO } from "../../types/produto";
 import type { CategoriaDTO } from "../../types/categoria";
@@ -15,44 +16,73 @@ export function EstoquePage() {
   const [produtos, setProdutos] = useState<ProdutoDTO[]>([]);
   const [categorias, setCategorias] = useState<CategoriaDTO[]>([]);
   const [busca, setBusca] = useState("");
+
   const [categoriaAtiva, setCategoriaAtiva] = useState<number | "todos">(
     "todos",
   );
+
   const [erroPorProduto, setErroPorProduto] = useState<Record<number, string>>(
     {},
   );
 
+  const [produtoEditando, setProdutoEditando] = useState<ProdutoDTO | null>(
+    null,
+  );
+
   useEffect(() => {
-    produtoService
-      .listar({ size: 100 })
-      .then((r) => setProdutos(r.data.content));
-    categoriaService.listar().then((r) => setCategorias(r.data));
+    carregarDados();
   }, []);
+
+  async function carregarDados() {
+    try {
+      const [produtosResponse, categoriasResponse] = await Promise.all([
+        produtoService.listar({ size: 100 }),
+        categoriaService.listar(),
+      ]);
+
+      setProdutos(produtosResponse.data.content);
+      setCategorias(categoriasResponse.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((p) => {
       const bateBusca = p.nome.toLowerCase().includes(busca.toLowerCase());
+
       const bateCategoria =
         categoriaAtiva === "todos" || p.categoriaId === categoriaAtiva;
+
       return bateBusca && bateCategoria;
     });
   }, [produtos, busca, categoriaAtiva]);
 
   const totalProdutos = produtos.length;
+
   const estoqueBaixo = produtos.filter(
     (p) => p.quantidadeAtual < p.quantidadeMinima && p.quantidadeAtual > 0,
   ).length;
+
   const esgotados = produtos.filter((p) => p.quantidadeAtual <= 0).length;
 
   async function ajustarQuantidade(produto: ProdutoDTO, delta: number) {
-    setErroPorProduto((prev) => ({ ...prev, [produto.id]: "" }));
+    setErroPorProduto((prev) => ({
+      ...prev,
+      [produto.id]: "",
+    }));
+
     const quantidadeAnterior = produto.quantidadeAtual;
     const novaQuantidade = quantidadeAnterior + delta;
 
-    // atualização otimista
     setProdutos((prev) =>
       prev.map((p) =>
-        p.id === produto.id ? { ...p, quantidadeAtual: novaQuantidade } : p,
+        p.id === produto.id
+          ? {
+              ...p,
+              quantidadeAtual: novaQuantidade,
+            }
+          : p,
       ),
     );
 
@@ -67,15 +97,19 @@ export function EstoquePage() {
         });
       }
     } catch (err) {
-      // reverte em caso de erro (ex: estoque insuficiente)
       const erro = err as ApiError;
+
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
-            ? { ...p, quantidadeAtual: quantidadeAnterior }
+            ? {
+                ...p,
+                quantidadeAtual: quantidadeAnterior,
+              }
             : p,
         ),
       );
+
       setErroPorProduto((prev) => ({
         ...prev,
         [produto.id]: erro.mensagem ?? "Erro ao atualizar estoque",
@@ -89,13 +123,22 @@ export function EstoquePage() {
   ) {
     setProdutos((prev) =>
       prev.map((p) =>
-        p.id === produtoId ? { ...p, quantidadeAtual: valor } : p,
+        p.id === produtoId
+          ? {
+              ...p,
+              quantidadeAtual: valor,
+            }
+          : p,
       ),
     );
   }
 
   async function ajustarPorSlider(produto: ProdutoDTO, novaQuantidade: number) {
-    setErroPorProduto((prev) => ({ ...prev, [produto.id]: "" }));
+    setErroPorProduto((prev) => ({
+      ...prev,
+      [produto.id]: "",
+    }));
+
     const quantidadeAnterior = produto.quantidadeAtual;
 
     try {
@@ -104,13 +147,18 @@ export function EstoquePage() {
       });
     } catch (err) {
       const erro = err as ApiError;
+
       setProdutos((prev) =>
         prev.map((p) =>
           p.id === produto.id
-            ? { ...p, quantidadeAtual: quantidadeAnterior }
+            ? {
+                ...p,
+                quantidadeAtual: quantidadeAnterior,
+              }
             : p,
         ),
       );
+
       setErroPorProduto((prev) => ({
         ...prev,
         [produto.id]: erro.mensagem ?? "Erro ao ajustar estoque",
@@ -118,21 +166,46 @@ export function EstoquePage() {
     }
   }
 
+  function abrirEdicao(produto: ProdutoDTO) {
+    setProdutoEditando(produto);
+  }
+
+  function fecharEdicao() {
+    setProdutoEditando(null);
+  }
+
+  function atualizarProdutoNaLista(produtoAtualizado: ProdutoDTO) {
+    setProdutos((prev) =>
+      prev.map((p) => (p.id === produtoAtualizado.id ? produtoAtualizado : p)),
+    );
+
+    setProdutoEditando(null);
+  }
+
   function statusBadge(p: ProdutoDTO) {
     const dias = diasParaVencer(p.dataValidade);
 
     if (p.quantidadeAtual <= 0) {
-      return { texto: "ESGOTADO", classe: "bg-danger-100 text-danger-600" };
+      return {
+        texto: "ESGOTADO",
+        classe: "bg-danger-100 text-danger-600",
+      };
     }
+
     if (dias !== null && dias <= 7) {
       return {
         texto: dias <= 0 ? "VENCIDO" : `VENCE EM ${dias}D`,
         classe: "bg-danger-100 text-danger-600",
       };
     }
+
     if (p.quantidadeAtual < p.quantidadeMinima) {
-      return { texto: "BAIXO", classe: "bg-warn-100 text-warn-600" };
+      return {
+        texto: "BAIXO",
+        classe: "bg-warn-100 text-warn-600",
+      };
     }
+
     return null;
   }
 
@@ -147,11 +220,13 @@ export function EstoquePage() {
       <div className="-mt-2 px-5">
         <h2 className="mt-4 mb-3 font-bold text-slate-800">Estoque</h2>
 
+        {/* BUSCA */}
         <div className="relative mb-3">
           <Search
             size={16}
             className="absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
           />
+
           <input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
@@ -160,6 +235,7 @@ export function EstoquePage() {
           />
         </div>
 
+        {/* FILTROS */}
         <div className="relative mb-4">
           <div className="scroll-thin flex gap-2 overflow-x-auto pb-2">
             <FiltroChip
@@ -167,6 +243,7 @@ export function EstoquePage() {
               ativo={categoriaAtiva === "todos"}
               onClick={() => setCategoriaAtiva("todos")}
             />
+
             {categorias.map((c) => (
               <FiltroChip
                 key={c.id}
@@ -176,20 +253,23 @@ export function EstoquePage() {
               />
             ))}
           </div>
+
           <div className="from-surface pointer-events-none absolute top-0 right-0 bottom-3 w-8 bg-linear-to-l to-transparent" />
         </div>
 
+        {/* PRODUTOS */}
         <ul className="space-y-3">
           {produtosFiltrados.map((p) => {
             const badge = statusBadge(p);
+
             const categoriaNome =
               categorias.find((c) => c.id === p.categoriaId)?.nome ?? "";
+
             const dias = diasParaVencer(p.dataValidade);
+
             const alertaValidade =
               precisaAlertarValidade(p.dataValidade) && p.quantidadeAtual > 0;
 
-            // a barra fica vermelha se a validade está no período de alerta,
-            // senão segue a lógica normal de nível de estoque
             const corThumb = alertaValidade
               ? "var(--color-danger-600)"
               : p.quantidadeAtual <= 0
@@ -216,13 +296,16 @@ export function EstoquePage() {
                 key={p.id}
                 className="rounded-2xl border border-slate-100 bg-white p-4"
               >
+                {/* CABEÇALHO DO PRODUTO */}
                 <div className="mb-1 flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-slate-800">
                       {p.nome}
                     </p>
+
                     <p className="text-[11px] text-slate-400">
                       {categoriaNome}
+
                       {dias !== null && (
                         <span
                           className={
@@ -235,15 +318,29 @@ export function EstoquePage() {
                       )}
                     </p>
                   </div>
-                  {badge && (
-                    <span
-                      className={`rounded-full px-2 py-1 text-[10px] font-bold ${badge.classe}`}
+
+                  <div className="flex items-center gap-2">
+                    {badge && (
+                      <span
+                        className={`rounded-full px-2 py-1 text-[10px] font-bold ${badge.classe}`}
+                      >
+                        {badge.texto}
+                      </span>
+                    )}
+
+                    {/* EDITAR */}
+                    <button
+                      type="button"
+                      onClick={() => abrirEdicao(p)}
+                      title="Editar produto"
+                      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200"
                     >
-                      {badge.texto}
-                    </span>
-                  )}
+                      <Edit size={14} />
+                    </button>
+                  </div>
                 </div>
 
+                {/* SLIDER */}
                 <input
                   type="range"
                   min={0}
@@ -269,14 +366,17 @@ export function EstoquePage() {
                   }
                 />
 
+                {/* QUANTIDADE */}
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm">
                     <span className="font-bold">{p.quantidadeAtual}</span>
+
                     <span className="text-slate-400">
                       {" "}
-                      {p.unidade.toLowerCase()} · min {p.quantidadeMinima}
+                      {p.unidade} · min {p.quantidadeMinima}
                     </span>
                   </p>
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => ajustarQuantidade(p, -STEP_PADRAO)}
@@ -285,6 +385,7 @@ export function EstoquePage() {
                     >
                       <Minus size={14} />
                     </button>
+
                     <button
                       onClick={() => ajustarQuantidade(p, STEP_PADRAO)}
                       className="bg-brand-600 hover:bg-brand-700 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors"
@@ -294,6 +395,7 @@ export function EstoquePage() {
                   </div>
                 </div>
 
+                {/* ERRO */}
                 {erroPorProduto[p.id] && (
                   <p className="text-danger-600 mt-2 text-[11px]">
                     {erroPorProduto[p.id]}
@@ -304,6 +406,16 @@ export function EstoquePage() {
           })}
         </ul>
       </div>
+
+      {/* MODAL DE EDIÇÃO */}
+      {produtoEditando && (
+        <EditarProdutoModal
+          produto={produtoEditando}
+          categorias={categorias}
+          onFechar={fecharEdicao}
+          onAtualizado={atualizarProdutoNaLista}
+        />
+      )}
     </div>
   );
 }

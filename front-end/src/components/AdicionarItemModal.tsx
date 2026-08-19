@@ -4,6 +4,7 @@ import { produtoService } from "../api/produtoService";
 import { categoriaService } from "../api/categoriaService";
 import type { CategoriaDTO } from "../types/categoria";
 import type { ApiError } from "../types/error";
+import type { Unidade } from "../types/produto";
 
 interface AdicionarItemModalProps {
   onConfirmar: (produtoId: number) => Promise<void>;
@@ -21,6 +22,7 @@ export function AdicionarItemModal({
 
   const [nome, setNome] = useState("");
   const [categoriaId, setCategoriaId] = useState<number | "">("");
+  const [unidade, setUnidade] = useState<Unidade>("UN");
   const [quantidade, setQuantidade] = useState("");
   const [estoqueMinimo, setEstoqueMinimo] = useState("");
   const [dataValidade, setDataValidade] = useState("");
@@ -73,6 +75,7 @@ export function AdicionarItemModal({
       const res = await produtoService.criarRapido({
         nome: nome.trim(),
         categoriaId,
+        unidade,
         quantidadeAtual: Number(quantidade) || 0,
         quantidadeMinima: Number(estoqueMinimo),
         dataValidade: dataValidade || undefined,
@@ -138,6 +141,7 @@ export function AdicionarItemModal({
           </div>
         ) : (
           <>
+            {/* CATEGORIA */}
             <label className="mb-3 block text-sm font-medium text-slate-700">
               Categoria
               <select
@@ -157,6 +161,7 @@ export function AdicionarItemModal({
               </select>
             </label>
 
+            {/* PRODUTO */}
             <label className="mb-3 block text-sm font-medium text-slate-700">
               Produto
               <input
@@ -167,6 +172,24 @@ export function AdicionarItemModal({
               />
             </label>
 
+            {/* UNIDADE */}
+            <label className="mb-3 block text-sm font-medium text-slate-700">
+              Unidade
+              <select
+                value={unidade}
+                onChange={(e) => setUnidade(e.target.value as Unidade)}
+                className="focus:ring-brand-500/30 mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm focus:ring-2 focus:outline-none"
+              >
+                <option value="UN">Unidade (UN)</option>
+                <option value="KG">Quilograma (KG)</option>
+                <option value="G">Grama (G)</option>
+                <option value="L">Litro (L)</option>
+                <option value="ML">Mililitro (ML)</option>
+                <option value="PCT">Pacote (PCT)</option>
+              </select>
+            </label>
+
+            {/* QUANTIDADES */}
             <div className="mb-3 grid grid-cols-2 gap-3">
               <label className="block text-xs font-medium text-slate-500">
                 Quantidade
@@ -193,6 +216,7 @@ export function AdicionarItemModal({
               </label>
             </div>
 
+            {/* VALIDADE */}
             <label className="mb-5 block text-xs font-medium text-slate-500">
               Data de validade (opcional)
               <input
@@ -203,6 +227,7 @@ export function AdicionarItemModal({
               />
             </label>
 
+            {/* BOTÕES */}
             <div className="flex gap-3">
               <button
                 onClick={onFechar}
