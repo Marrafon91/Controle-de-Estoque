@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Check, Info, Minus, Plus } from "lucide-react";
 import { listaCompraService } from "../../api/listaCompraService";
-import type { ListaCompraDTO, ListaCompraItemDTO } from "../../types/listaCompra";
+import type {
+  ListaCompraDTO,
+  ListaCompraItemDTO,
+} from "../../types/listaCompra";
 import { AdicionarItemModal } from "../../components/AdicionarItemModal";
 import type { ApiError } from "../../types/error";
 
@@ -43,7 +46,9 @@ export function ListaComprasPage() {
     setLista({
       ...lista,
       itens: lista.itens.map((i) =>
-        i.id === item.id ? { ...i, quantidadeComprada: novaQuantidade, comprado } : i,
+        i.id === item.id
+          ? { ...i, quantidadeComprada: novaQuantidade, comprado }
+          : i,
       ),
     });
 
@@ -70,7 +75,7 @@ export function ListaComprasPage() {
 
   if (!listaId) {
     return (
-      <div className="bg-surface flex min-h-screen items-center justify-center text-sm text-danger-600">
+      <div className="bg-surface text-danger-600 flex min-h-screen items-center justify-center text-sm">
         Lista inválida.
       </div>
     );
@@ -87,16 +92,19 @@ export function ListaComprasPage() {
   const pendentes = lista.itens.filter((i) => !i.comprado).length;
 
   return (
-    <div className="bg-surface min-h-screen pb-24 px-5 pt-6">
+    <div className="bg-surface min-h-screen px-5 pt-6 pb-24">
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-800">Lista de compras</h2>
+
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">{pendentes} pendentes</span>
+
           <button
             onClick={() => setModalAberto(true)}
-            className="bg-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-brand-700 transition-colors"
+            className="bg-brand-600 shadow-brand-600/20 hover:bg-brand-700 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:shadow-md active:scale-95 cursor-pointer"
           >
-            <Plus size={14} />
+            <Plus size={17} strokeWidth={2.5} />
+            <span>Adicionar</span>
           </button>
         </div>
       </div>
@@ -166,7 +174,7 @@ export function ListaComprasPage() {
                     <button
                       onClick={() => alterarQuantidade(item, -1)}
                       disabled={quantidadeAtual <= 0}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-40"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 transition-colors hover:bg-slate-200 disabled:opacity-40"
                     >
                       <Minus size={12} />
                     </button>
@@ -175,7 +183,7 @@ export function ListaComprasPage() {
                     </span>
                     <button
                       onClick={() => alterarQuantidade(item, 1)}
-                      className="bg-brand-600 flex h-7 w-7 items-center justify-center rounded-full text-white hover:bg-brand-700 transition-colors"
+                      className="bg-brand-600 hover:bg-brand-700 flex h-7 w-7 items-center justify-center rounded-full text-white transition-colors"
                     >
                       <Plus size={12} />
                     </button>

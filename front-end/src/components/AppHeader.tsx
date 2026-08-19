@@ -32,7 +32,7 @@ export function AppHeader({
     : "OLÁ";
 
   return (
-    <header className="from-brand-600 to-brand-700 rounded-b-3xl bg-linear-to-br px-5 pt-5 pb-6 text-white">
+    <header className="from-brand-600 to-brand-700  bg-linear-to-br px-5 pt-5 pb-6 text-white">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-xs font-bold">
