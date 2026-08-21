@@ -53,25 +53,17 @@ export function EstoquePage() {
   // ================================
   // PAGINAÇÃO
   // ================================
-
   const [offset, setOffset] = useState(0);
-
   const [temMaisProdutos, setTemMaisProdutos] = useState(true);
-
-  const [carregandoProdutos, setCarregandoProdutos] = useState(false);
-
+  const [carregandoProdutos, setCarregandoProdutos] = useState(true); // ← mudou de false pra true
   const [carregandoMais, setCarregandoMais] = useState(false);
 
   // ================================
   // CARREGAMENTO INICIAL
   // ================================
 
-  useEffect(() => {
-    carregarDadosIniciais();
-  }, []);
-
   async function carregarDadosIniciais() {
-    setCarregandoProdutos(true);
+    // removido o setCarregandoProdutos(true) daqui
 
     try {
       const [produtosResponse, categoriasResponse] = await Promise.all([
@@ -79,14 +71,12 @@ export function EstoquePage() {
           limite: LIMITE_POR_PAGINA,
           offset: 0,
         }),
-
         categoriaService.listar(),
       ]);
 
       const pagina = produtosResponse.data;
 
       setProdutos(pagina.content);
-
       setCategorias(categoriasResponse.data);
 
       // Próximo offset
@@ -100,6 +90,11 @@ export function EstoquePage() {
       setCarregandoProdutos(false);
     }
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    carregarDadosIniciais();
+  }, []);
 
   // ================================
   // CARREGAR MAIS
@@ -549,11 +544,12 @@ export function EstoquePage() {
                       step={1}
                       value={p.quantidadeAtual}
                       className="stock-slider my-3"
-                      style={{
-                        ["--thumb-color" as any]: corThumb,
-
-                        background: `linear-gradient(to right, ${corPreenchida} ${percentual}%, #E2E8F0 ${percentual}%)`,
-                      }}
+                      style={
+                        {
+                          "--thumb-color": corThumb,
+                          background: `linear-gradient(to right, ${corPreenchida} ${percentual}%, #E2E8F0 ${percentual}%)`,
+                        } as React.CSSProperties & Record<`--${string}`, string>
+                      }
                       onInput={(e) =>
                         atualizarLocalmenteDuranteArraste(
                           p.id,

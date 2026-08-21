@@ -24,7 +24,7 @@ public class CategoriaService {
     private static final List<String> CATEGORIAS_PADRAO = List.of(
             "Mercearia", "Limpeza", "Higiene", "Bebidas", "Carnes",
             "Grãos", "Hortaliças", "Laticínios", "Massas", "Frutas",
-            "Congelados", "Temperos", "Produtos de Limpeza"
+            "Congelados", "Temperos", "Produtos de Limpeza", "Outros"
     );
 
     @Transactional(readOnly = true)
